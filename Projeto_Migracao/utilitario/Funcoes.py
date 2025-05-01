@@ -1,6 +1,5 @@
-import json, math, requests, pyodbc, concurrent.futures, os, tkinter as tk, time
+import json, math, requests, pyodbc, concurrent.futures, os, time
 from rapidfuzz import fuzz
-from tkinter import messagebox
 
 headers = {
         "Authorization": "",
@@ -528,10 +527,8 @@ def similaridade(nome1, nome2):
     """
     Compara dois nomes de estados brasileiros e retorna o grau de similaridade (0 a 100).
     """
-    # Normaliza para minúsculas e remove espaços extras
     nome1 = nome1.strip().lower()
     nome2 = nome2.strip().lower()
-    # Calcula a similaridade usando a métrica de razão
     score = fuzz.WRatio(nome1, nome2)
     return score
 
@@ -569,5 +566,11 @@ def resgate_arquivos_pasta_local(cursor,caminho_absolute,tabela):
         except Exception as e:
             print(f"Erro ao processar o arquivo {arquivo['nome_arquivo']}: {e}")
 
-def insercao_funcionario():
-    pass
+
+def ler_pasta_config_json(caminho):
+    with open(caminho + '/' + 'config.json', 'r') as file:
+        config = json.load(file)
+    return config
+
+def ler_servicos_json(config):
+    return [item['nome'] for item in config["servicos"]]

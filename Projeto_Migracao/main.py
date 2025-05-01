@@ -1,12 +1,12 @@
-import sys
-sys.path.append('/Users/felipe.medeiros/Desktop/python_programas')
-
-import ttkbootstrap as ttk  # Certifique-se de usar ttkbootstrap
-from ttkbootstrap.constants import *
+import ttkbootstrap as ttk 
 from Funcoes_app import *
+from utilitario.Funcoes import ler_pasta_config_json, ler_servicos_json
+import json
 
-# Supondo que o arquivo iniciar.py contém uma lista de serviços
-servicos = ["Servico1", "Servico2", "Servico3"]
+config = ler_pasta_config_json(r'Projeto_Migracao\Servicos_Padrao')
+
+
+servicos = ler_servicos_json(config)
 
 def main():
     # Cria a janela principal com um tema moderno
@@ -16,14 +16,16 @@ def main():
     menu_bar = ttk.Menu(janela)
     janela.config(menu=menu_bar)
 
-    # Cria o menu "Arquivo"
+    #Menus Principais
     file_menu = ttk.Menu(menu_bar, tearoff=0)
-    file_menu.add_command(label="Configurações", command=abrir_configurar_banco)
+    menu_bar.add_cascade(label="Configuracoes", menu=file_menu)
+
+    #Menu do banco
+    file_menu.add_command(label="Bancos", command=abrir_configurar_banco)
     file_menu.add_separator()
     file_menu.add_command(label="Sair", command=janela.quit)
-    menu_bar.add_cascade(label="Arquivo", menu=file_menu)
 
-    # Restante do código...
+    # Título da janela principal
     criar_rotulo(janela, "Serviços Disponíveis:", 16)
 
     frame_servicos = ttk.Frame(janela)

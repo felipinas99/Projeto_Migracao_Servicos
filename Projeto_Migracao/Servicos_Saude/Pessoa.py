@@ -1,4 +1,0 @@
-# extracao: 'select * from'
-
-# json:
-
