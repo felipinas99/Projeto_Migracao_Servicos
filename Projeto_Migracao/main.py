@@ -1,6 +1,6 @@
 import ttkbootstrap as ttk 
 from Funcoes_app import *
-from utilitario.Funcoes import ler_pasta_config_json, ler_servicos_json, extrair_sql
+from utilitario.Funcoes import ler_pasta_config_json, ler_servicos_json, iniciar_delete, iniciar_atualizacao, iniciar_envios, iniciar_extracao
 import json
 
 config = ler_pasta_config_json(r'Projeto_Migracao\Servicos_Padrao')
@@ -46,7 +46,7 @@ def main():
     scrollbar.pack(side="right", fill="y")
 
 
-    # Lista os servicos do config.json
+    # Lista os servicos do config.json e cria os botões atribuindo suas funcoes
     for servico in servicos:
         frame_servico = ttk.Frame(scrollable_frame, padding="10 10 10 10")
         frame_servico.pack(pady=15, padx=10, fill=X)
@@ -54,17 +54,11 @@ def main():
         label_servico = ttk.Label(frame_servico, text=servico, font=("Helvetica", 14))
         label_servico.pack(side=LEFT, padx=10)
 
-        botao_extrair = ttk.Button(frame_servico, text="Extrair", command=lambda s=servico: extrair_sql('',''))
-        botao_extrair.pack(side=LEFT, padx=5)
+        criar_botao_servico(frame_servico, 'Extrair', servico, iniciar_extracao)
+        criar_botao_servico(frame_servico, 'Enviar', servico, iniciar_envios)
+        criar_botao_servico(frame_servico, 'Atualizar', servico, iniciar_atualizacao)
+        criar_botao_servico(frame_servico, 'Deletar', servico, iniciar_delete)
 
-        botao_enviar = ttk.Button(frame_servico, text="Enviar", command=lambda s=servico: iniciar_envio_total(None, None, s, "", "", "", ""))
-        botao_enviar.pack(side=LEFT, padx=5)
-
-        botao_atualizar = ttk.Button(frame_servico, text="Atualizar", command=lambda s=servico: iniciar_atualizacao_total(None, None, s, "", "", "", ""))
-        botao_atualizar.pack(side=LEFT, padx=5)
-
-        botao_deletar = ttk.Button(frame_servico, text="Deletar", command=lambda s=servico: delete_all("", "", "", "", 0, 99, 99, 1, True))
-        botao_deletar.pack(side=LEFT, padx=5)
 
     # Cria o frame de dados dentro da janela principal
     cria_frame_tabela(janela)

@@ -573,7 +573,6 @@ def resgate_arquivos_pasta_local(cursor,caminho_absolute,tabela):
 
 
 
-
 def ler_pasta_config_json(caminho):
     with open(caminho + '/' + 'config.json', 'r') as file:
         config = json.load(file)
@@ -586,5 +585,14 @@ def listrar_arquivos_py(caminho):
     arquivos_py = [arquivo for arquivo in os.listdir(caminho) if arquivo.endswith('.py')]
     return arquivos_py
 
-def extrair_sql(cursor,sql):
-    print("aqui")
+def iniciar_extracao(cursor, servico, funcao):
+    pass
+
+def iniciar_envios(cursor, servico, funcao):
+    pass
+
+def iniciar_atualizacao(cursor, servico, funcao):
+    pass
+
+def iniciar_delete(cursor, servico, funcao):
+    pass

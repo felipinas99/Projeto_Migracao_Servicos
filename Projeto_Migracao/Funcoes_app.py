@@ -133,3 +133,16 @@ def abrir_configurar_banco():
 
     botao_salvar = ttk.Button(configurar_banco_janela, text="Salvar", command=lambda: salvar_configuracao(entradas_origem, entradas_destino))
     botao_salvar.pack(pady=10)
+
+def clicar_botao_cor(botao):
+    botao.config(text="Processando...", state="disabled")  # Altera o texto e desativa o botão
+    # Simula uma ação (como extrair dados)
+    botao.after(2000, lambda: botao.config(text="Concluído", state="normal"))  # Reativa o botão após 2 segundos
+
+def criar_botao_servico(frame, funcao, servico, acao):
+    botao = ttk.Button(
+        frame,
+        text=funcao,
+        command=lambda: acao('', servico, funcao)
+    )
+    botao.pack(side=LEFT, padx=5)
