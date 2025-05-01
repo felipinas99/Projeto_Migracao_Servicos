@@ -108,7 +108,7 @@ def carregar_configuracao():
 def abrir_configurar_banco():
     configurar_banco_janela = ttk.Toplevel()  # Usando ttkbootstrap para criar a janela
     configurar_banco_janela.title("Configurar Banco")
-    configurar_banco_janela.geometry("800x600")
+    configurar_banco_janela.geometry("900x700+0+0")
 
     frame_origem = ttk.Frame(configurar_banco_janela, padding="5 5 5 5")
     frame_origem.pack(side="left", fill="both", expand=True)

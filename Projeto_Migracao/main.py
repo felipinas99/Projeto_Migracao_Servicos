@@ -1,6 +1,6 @@
 import ttkbootstrap as ttk 
 from Funcoes_app import *
-from utilitario.Funcoes import ler_pasta_config_json, ler_servicos_json
+from utilitario.Funcoes import ler_pasta_config_json, ler_servicos_json, extrair_sql
 import json
 
 config = ler_pasta_config_json(r'Projeto_Migracao\Servicos_Padrao')
@@ -28,26 +28,25 @@ def main():
     # Título da janela principal
     criar_rotulo(janela, "Serviços Disponíveis:", 16)
 
+    # Frame dos servicos
     frame_servicos = ttk.Frame(janela)
     frame_servicos.pack(side=LEFT, fill=BOTH, expand=True)
-
     canvas = ttk.Canvas(frame_servicos)
     scrollbar = ttk.Scrollbar(frame_servicos, orient="vertical", command=canvas.yview)
     scrollable_frame = ttk.Frame(canvas)
-
     scrollable_frame.bind(
         "<Configure>",
         lambda e: canvas.configure(
             scrollregion=canvas.bbox("all")
         )
     )
-
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     canvas.configure(yscrollcommand=scrollbar.set)
-
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
 
+
+    # Lista os servicos do config.json
     for servico in servicos:
         frame_servico = ttk.Frame(scrollable_frame, padding="10 10 10 10")
         frame_servico.pack(pady=15, padx=10, fill=X)
@@ -55,7 +54,7 @@ def main():
         label_servico = ttk.Label(frame_servico, text=servico, font=("Helvetica", 14))
         label_servico.pack(side=LEFT, padx=10)
 
-        botao_extrair = ttk.Button(frame_servico, text="Extrair", command=lambda s=servico: pesquisa_all(s, "", 0, 99))
+        botao_extrair = ttk.Button(frame_servico, text="Extrair", command=lambda s=servico: extrair_sql('',''))
         botao_extrair.pack(side=LEFT, padx=5)
 
         botao_enviar = ttk.Button(frame_servico, text="Enviar", command=lambda s=servico: iniciar_envio_total(None, None, s, "", "", "", ""))
@@ -75,6 +74,7 @@ def main():
     label_lotes.pack(pady=10)
     atualizar_lotes(label_lotes)
     
+    # frase no rodapé
     rodape = ttk.Label(janela, text="Projeto Migração de dados", font=("Helvetica", 10), anchor=CENTER)
     rodape.pack(side=BOTTOM, fill=X, pady=10)
 

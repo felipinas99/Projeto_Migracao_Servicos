@@ -567,6 +567,13 @@ def resgate_arquivos_pasta_local(cursor,caminho_absolute,tabela):
             print(f"Erro ao processar o arquivo {arquivo['nome_arquivo']}: {e}")
 
 
+
+
+
+
+
+
+
 def ler_pasta_config_json(caminho):
     with open(caminho + '/' + 'config.json', 'r') as file:
         config = json.load(file)
@@ -574,3 +581,10 @@ def ler_pasta_config_json(caminho):
 
 def ler_servicos_json(config):
     return [item['nome'] for item in config["servicos"]]
+
+def listrar_arquivos_py(caminho):
+    arquivos_py = [arquivo for arquivo in os.listdir(caminho) if arquivo.endswith('.py')]
+    return arquivos_py
+
+def extrair_sql(cursor,sql):
+    print("aqui")
