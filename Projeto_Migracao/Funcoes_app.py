@@ -34,30 +34,30 @@ def obter_dados():
     # Função que retorna uma lista de dados com 4 colunas
     return [[random.randint(1, 100) for _ in range(4)] for _ in range(100)]
 
-def atualizar_tabela_treeview(treeview):
-    for item in treeview.get_children():
-        treeview.delete(item)
-    dados = obter_dados()[:100]  # Limita a 100 itens
-    for linha in dados:
-        treeview.insert("", "end", values=linha)
-    treeview.after(2000, atualizar_tabela, treeview)  # Atualiza a cada 2 segundos
+# def atualizar_tabela_treeview(treeview):
+#     for item in treeview.get_children():
+#         treeview.delete(item)
+#     dados = obter_dados()[:100]  # Limita a 100 itens
+#     for linha in dados:
+#         treeview.insert("", "end", values=linha)
+#     treeview.after(2000, atualizar_tabela, treeview)  # Atualiza a cada 2 segundos
 
-def criar_frame_dados_treeview(janela):
-    frame_dados = ttk.Frame(janela, padding="10 10 10 10")
-    frame_dados.pack(side="right", fill="both", expand=True)
+# def criar_frame_dados_treeview(janela):
+#     frame_dados = ttk.Frame(janela, padding="10 10 10 10")
+#     frame_dados.pack(side="right", fill="both", expand=True)
 
-    colunas = ("Coluna1", "Coluna2", "Coluna3", "Coluna4")
-    treeview = ttk.Treeview(frame_dados, columns=colunas, show="headings")
-    for col in colunas:
-        treeview.heading(col, text=col)
-        treeview.column(col, width=100)
-    treeview.pack(side="left", fill="both", expand=True)
+#     colunas = ("Coluna1", "Coluna2", "Coluna3", "Coluna4")
+#     treeview = ttk.Treeview(frame_dados, columns=colunas, show="headings")
+#     for col in colunas:
+#         treeview.heading(col, text=col)
+#         treeview.column(col, width=100)
+#     treeview.pack(side="left", fill="both", expand=True)
 
-    scrollbar = ttk.Scrollbar(frame_dados, orient="vertical", command=treeview.yview)
-    treeview.configure(yscrollcommand=scrollbar.set)
-    scrollbar.pack(side="right", fill="y")
+#     scrollbar = ttk.Scrollbar(frame_dados, orient="vertical", command=treeview.yview)
+#     treeview.configure(yscrollcommand=scrollbar.set)
+#     scrollbar.pack(side="right", fill="y")
 
-    atualizar_tabela_treeview(treeview)
+#     atualizar_tabela_treeview(treeview)
 
 def cria_frame_tabela():
     configurar_banco_janela = ttk.Toplevel()  # Usando ttkbootstrap para criar a janela
@@ -146,6 +146,7 @@ def criar_botao_servico(frame, funcao, servico, acao):
     )
     botao.pack(side=LEFT, padx=5)
 
+
 def acao_com_cor(botao, **kwargs):
     # Pega os argumentos pelo nome
     servico = kwargs.get("servico")  # Obtém o valor de 'servico'
@@ -153,13 +154,19 @@ def acao_com_cor(botao, **kwargs):
     acao = kwargs.get("acao")        # Obtém a função 'acao'
 
     # Altera a cor do botão para indicar que foi acionado
-    botao.config(bootstyle="warning", state="disabled", text=f"Processando {funcao}...")
+    botao.config( state="disabled", text=f"Processando {funcao}...")
 
         # Chama a ação original
-    if acao:
-        acao('',servico, funcao)
+    retorno = acao('',servico, funcao)
         
     # Simula a execução da ação e restaura o estado original
-    botao.after(2000, lambda: botao.config(bootstyle="primary", state="normal", text=funcao))
+    if retorno == True:
+        botao.after(0, lambda: botao.config(state="normal", text="Sucesso " + funcao , bootstyle="success"))
+    else:
+        botao.after(0, lambda: botao.config(state="normal", text="Falha " + funcao, bootstyle="danger"))
+
+    botao.after(3000, lambda: botao.config(text=funcao , bootstyle="primary"))
+
+
 
 

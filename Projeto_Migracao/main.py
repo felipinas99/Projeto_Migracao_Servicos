@@ -33,11 +33,11 @@ def main():
     file_menu_dados.add_command(label="lotes", command=cria_frame_tabela)
 
     # Título da janela principal
-    criar_rotulo(janela, "Serviços Disponíveis:", 16)
+    criar_rotulo(janela, "Serviços Disponíveis:", 12)
 
     # Frame dos servicos
     frame_servicos = ttk.Frame(janela)
-    frame_servicos.pack(side=LEFT, fill=BOTH, expand=True)
+    frame_servicos.pack(side=LEFT, fill='y', expand=False, padx=0, pady=10, ipadx=10, ipady=0)
     canvas = ttk.Canvas(frame_servicos)
     scrollbar = ttk.Scrollbar(frame_servicos, orient="vertical", command=canvas.yview)
     scrollable_frame = ttk.Frame(canvas)
@@ -55,11 +55,11 @@ def main():
 
     # Lista os servicos do config.json e cria os botões atribuindo suas funcoes
     for servico in servicos:
-        frame_servico = ttk.Frame(scrollable_frame, padding="10 10 10 10")
-        frame_servico.pack(pady=15, padx=10, fill=X)
+        frame_servico = ttk.Frame(scrollable_frame, padding="10 15 0 0")
+        frame_servico.pack(pady=0, padx=0, fill=X)
 
-        label_servico = ttk.Label(frame_servico, text=servico, font=("Helvetica", 14))
-        label_servico.pack(side=LEFT, padx=10)
+        label_servico = ttk.Label(frame_servico, text=servico, font=("Helvetica", 10))
+        label_servico.pack(side=LEFT, padx=0)
 
         criar_botao_servico(frame_servico, 'Extrair', servico, iniciar_extracao)
         criar_botao_servico(frame_servico, 'Enviar', servico, iniciar_envios)
@@ -70,10 +70,10 @@ def main():
     # Cria o frame de dados dentro da janela principal
 
 
-    # Adiciona o campo "Lotes em Processamento"
-    label_lotes = ttk.Label(janela, text="Lotes em Processamento: 0", font=("Helvetica", 14))
-    label_lotes.pack(pady=10)
-    atualizar_lotes(label_lotes)
+    # # Adiciona o campo "Lotes em Processamento"
+    # label_lotes = ttk.Label(janela, text="Lotes em Processamento: 0", font=("Helvetica", 10))
+    # label_lotes.pack(pady=10)
+    # atualizar_lotes(label_lotes)
     
     # frase no rodapé
     rodape = ttk.Label(janela, text="Projeto Migração de dados", font=("Helvetica", 10), anchor=CENTER)

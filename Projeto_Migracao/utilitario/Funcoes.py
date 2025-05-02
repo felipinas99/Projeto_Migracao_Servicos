@@ -587,6 +587,7 @@ def listrar_arquivos_py(caminho):
 
 def iniciar_extracao(cursor, servico, funcao):
     print(servico,funcao)
+    return True
     pass
 
 def iniciar_envios(cursor, servico, funcao):
