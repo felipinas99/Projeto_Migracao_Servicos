@@ -138,11 +138,11 @@ def abrir_configurar_banco():
     botao_salvar = ttk.Button(configurar_banco_janela, text="Salvar", command=lambda: salvar_configuracao(entradas_origem, entradas_destino))
     botao_salvar.pack(pady=10)
 
-def criar_botao_servico(frame, funcao, servico, acao):
+def criar_botao_servico(frame, funcao, servico, caminho, acao):
     botao = ttk.Button(
         frame,
         text=funcao,
-        command=lambda: acao_com_cor(botao, servico=servico, funcao=funcao, acao=acao)
+        command=lambda: acao_com_cor(botao, servico=servico, funcao=funcao, caminho = caminho, acao=acao)
     )
     botao.pack(side=LEFT, padx=5)
 
@@ -152,12 +152,13 @@ def acao_com_cor(botao, **kwargs):
     servico = kwargs.get("servico")  # Obtém o valor de 'servico'
     funcao = kwargs.get("funcao")    # Obtém o valor de 'funcao'
     acao = kwargs.get("acao")        # Obtém a função 'acao'
+    caminho = kwargs.get("caminho")        # Obtém a função 'caminho'
 
     # Altera a cor do botão para indicar que foi acionado
     botao.config( state="disabled", text=f"Processando {funcao}...")
 
         # Chama a ação original
-    retorno = acao('',servico, funcao)
+    retorno = acao('', '', servico, funcao, caminho)
         
     # Simula a execução da ação e restaura o estado original
     if retorno == True:

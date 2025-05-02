@@ -3,10 +3,10 @@ from Funcoes_app import *
 from utilitario.Funcoes import ler_pasta_config_json, ler_servicos_json, iniciar_delete, iniciar_atualizacao, iniciar_envios, iniciar_extracao
 import json
 
-config = ler_pasta_config_json(r'Projeto_Migracao\Servicos_Padrao')
-
-
-servicos = ler_servicos_json(config)
+ 
+caminho = 'Projeto_Migracao\Servicos_Padrao'
+pasta_config = ler_pasta_config_json(caminho)
+servicos = ler_servicos_json(pasta_config)
 
 def main():
     # Cria a janela principal com um tema moderno
@@ -61,10 +61,10 @@ def main():
         label_servico = ttk.Label(frame_servico, text=servico, font=("Helvetica", 10))
         label_servico.pack(side=LEFT, padx=0)
 
-        criar_botao_servico(frame_servico, 'Extrair', servico, iniciar_extracao)
-        criar_botao_servico(frame_servico, 'Enviar', servico, iniciar_envios)
-        criar_botao_servico(frame_servico, 'Atualizar', servico, iniciar_atualizacao)
-        criar_botao_servico(frame_servico, 'Deletar', servico, iniciar_delete)
+        criar_botao_servico(frame_servico, 'Extrair', servico, caminho, iniciar_extracao)
+        criar_botao_servico(frame_servico, 'Enviar', servico,  caminho, iniciar_envios)
+        criar_botao_servico(frame_servico, 'Atualizar', servico, caminho, iniciar_atualizacao)
+        criar_botao_servico(frame_servico, 'Deletar', servico,  caminho, iniciar_delete)
 
 
     # Cria o frame de dados dentro da janela principal

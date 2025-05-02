@@ -1,6 +1,7 @@
 import json, math, requests, pyodbc, concurrent.futures, os, time
 from rapidfuzz import fuzz
 
+
 headers = {
         "Authorization": "",
         "Content-Type": "application/json"
@@ -581,26 +582,29 @@ def ler_pasta_config_json(caminho):
 def ler_servicos_json(config):
     return [item['nome'] for item in config["servicos"]]
 
-def listrar_arquivos_py(caminho):
-    arquivos_py = [arquivo for arquivo in os.listdir(caminho) if arquivo.endswith('.py')]
-    return arquivos_py
+def listrar_arquivos(caminho, extensao):
+    arquivos = [arquivo for arquivo in os.listdir(caminho) if arquivo.endswith('.'+extensao)]
+    return arquivos
 
-def iniciar_extracao(cursor, servico, funcao):
-    print(servico,funcao)
+
+
+def iniciar_extracao(cursor_extracao, cursor_envio, servico, funcao, caminho):
+    with open(caminho + '/' + 'SQL_Extracao' + '/' + servico + '.sql', 'r', encoding='utf-8') as arquivo:
+        script = arquivo.read()
+
+    retorno = executa_query(cursor_extracao, script)
+
+    print(servico, funcao, script)
     return True
-    pass
 
 def iniciar_envios(cursor, servico, funcao):
-    print(servico,funcao)
+    print(servico, funcao)
     return True
-    pass
 
 def iniciar_atualizacao(cursor, servico, funcao):
-    print(servico,funcao)
+    print(servico, funcao)
     return True
-    pass
 
 def iniciar_delete(cursor, servico, funcao):
-    print(servico,funcao)
+    print(servico, funcao)
     return True
-    pass

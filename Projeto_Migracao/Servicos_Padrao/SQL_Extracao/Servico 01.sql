@@ -1,0 +1,1 @@
+select * from * siem_atibaia_siem_assuntos
