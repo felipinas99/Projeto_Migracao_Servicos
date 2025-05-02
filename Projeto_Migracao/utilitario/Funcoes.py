@@ -592,12 +592,15 @@ def iniciar_extracao(cursor, servico, funcao):
 
 def iniciar_envios(cursor, servico, funcao):
     print(servico,funcao)
+    return True
     pass
 
 def iniciar_atualizacao(cursor, servico, funcao):
     print(servico,funcao)
+    return True
     pass
 
 def iniciar_delete(cursor, servico, funcao):
     print(servico,funcao)
+    return True
     pass
