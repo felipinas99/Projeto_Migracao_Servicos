@@ -59,13 +59,15 @@ def criar_frame_dados_treeview(janela):
 
     atualizar_tabela_treeview(treeview)
 
-def cria_frame_tabela(janela):
-    frame_dados = ttk.Frame(janela, padding="10 10 10 10")
-    frame_dados.pack(side="right", fill="both", expand=True)
+def cria_frame_tabela():
+    configurar_banco_janela = ttk.Toplevel()  # Usando ttkbootstrap para criar a janela
+    configurar_banco_janela.title("Configurar Banco")
+    configurar_banco_janela.geometry("900x700+0+0")
+
     coldata = [
-    {"text": "ID", "stretch": False},
-    "Nome",
-    {"text": "Idade", "stretch": False},
+    {"text": "ID", "stretch": TRUE},
+    {"text": "Nome", "stretch": TRUE},
+    {"text": "Idade", "stretch": TRUE},
 ]
 
     rowdata = [
@@ -74,15 +76,17 @@ def cria_frame_tabela(janela):
         ("3", "Pedro", 45),
     ]
 
-    table = Tableview(
-        master=janela,
+    tabela = Tableview(
+        master=configurar_banco_janela,
         coldata=coldata,
         rowdata=rowdata,
         paginated=True,
         searchable=True,
+        pagesize = 30,
+        autofit=True,
         bootstyle="info",
     )
-    table.pack(fill="both", expand=True, padx=10, pady=10)
+    tabela.pack( fill="both", expand=True)
 
 
 def atualizar_lotes(label):
@@ -134,15 +138,28 @@ def abrir_configurar_banco():
     botao_salvar = ttk.Button(configurar_banco_janela, text="Salvar", command=lambda: salvar_configuracao(entradas_origem, entradas_destino))
     botao_salvar.pack(pady=10)
 
-def clicar_botao_cor(botao):
-    botao.config(text="Processando...", state="disabled")  # Altera o texto e desativa o botão
-    # Simula uma ação (como extrair dados)
-    botao.after(2000, lambda: botao.config(text="Concluído", state="normal"))  # Reativa o botão após 2 segundos
-
 def criar_botao_servico(frame, funcao, servico, acao):
     botao = ttk.Button(
         frame,
         text=funcao,
-        command=lambda: acao('', servico, funcao)
+        command=lambda: acao_com_cor(botao, servico=servico, funcao=funcao, acao=acao)
     )
     botao.pack(side=LEFT, padx=5)
+
+def acao_com_cor(botao, **kwargs):
+    # Pega os argumentos pelo nome
+    servico = kwargs.get("servico")  # Obtém o valor de 'servico'
+    funcao = kwargs.get("funcao")    # Obtém o valor de 'funcao'
+    acao = kwargs.get("acao")        # Obtém a função 'acao'
+
+    # Altera a cor do botão para indicar que foi acionado
+    botao.config(bootstyle="warning", state="disabled", text=f"Processando {funcao}...")
+
+        # Chama a ação original
+    if acao:
+        acao('',servico, funcao)
+        
+    # Simula a execução da ação e restaura o estado original
+    botao.after(2000, lambda: botao.config(bootstyle="primary", state="normal", text=funcao))
+
+

@@ -11,19 +11,26 @@ servicos = ler_servicos_json(config)
 def main():
     # Cria a janela principal com um tema moderno
     janela = ttk.Window(themename="darkly")
+    janela.geometry("1200x800")
 
     # Adiciona a barra de menu
     menu_bar = ttk.Menu(janela)
     janela.config(menu=menu_bar)
 
     #Menus Principais
-    file_menu = ttk.Menu(menu_bar, tearoff=0)
-    menu_bar.add_cascade(label="Configuracoes", menu=file_menu)
+    file_menu_config = ttk.Menu(menu_bar, tearoff=0)
+    menu_bar.add_cascade(label="Configuracoes", menu=file_menu_config)
+
+    file_menu_dados = ttk.Menu(menu_bar, tearoff=0)
+    menu_bar.add_cascade(label="Dados", menu=file_menu_dados)
 
     #Menu do banco
-    file_menu.add_command(label="Bancos", command=abrir_configurar_banco)
-    file_menu.add_separator()
-    file_menu.add_command(label="Sair", command=janela.quit)
+    file_menu_config.add_command(label="Bancos", command=abrir_configurar_banco)
+    file_menu_config.add_separator()
+    file_menu_config.add_command(label="Sair", command=janela.quit)
+
+    #Menu do dados
+    file_menu_dados.add_command(label="lotes", command=cria_frame_tabela)
 
     # Título da janela principal
     criar_rotulo(janela, "Serviços Disponíveis:", 16)
@@ -61,7 +68,7 @@ def main():
 
 
     # Cria o frame de dados dentro da janela principal
-    cria_frame_tabela(janela)
+
 
     # Adiciona o campo "Lotes em Processamento"
     label_lotes = ttk.Label(janela, text="Lotes em Processamento: 0", font=("Helvetica", 14))

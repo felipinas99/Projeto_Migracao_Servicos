@@ -586,13 +586,17 @@ def listrar_arquivos_py(caminho):
     return arquivos_py
 
 def iniciar_extracao(cursor, servico, funcao):
+    print(servico,funcao)
     pass
 
 def iniciar_envios(cursor, servico, funcao):
+    print(servico,funcao)
     pass
 
 def iniciar_atualizacao(cursor, servico, funcao):
+    print(servico,funcao)
     pass
 
 def iniciar_delete(cursor, servico, funcao):
+    print(servico,funcao)
     pass
