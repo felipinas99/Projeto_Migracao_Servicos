@@ -3,7 +3,7 @@ from ttkbootstrap.constants import *
 from ttkbootstrap.dialogs import *
 from ttkbootstrap.tableview import *
 import random
-import os
+import os, json, psycopg2
 
 config_file = "config_banco.txt"
 
@@ -95,18 +95,50 @@ def atualizar_lotes(label):
     label.config(text=f"Lotes em Processamento: {lotes}")
     label.after(2000, atualizar_lotes, label)  # Atualiza a cada 2 segundos
 
-def salvar_configuracao(campos_origem, campos_destino):
+def salvar_configuracao(campos,campos_origem, campos_destino):
+    config = {
+        "origem": {campo: campos_origem[i].get() for i, campo in enumerate(campos)},
+        "destino": {campo: campos_destino[i].get() for i, campo in enumerate(campos)}
+    }
+
+    for tipo in ["origem", "destino"]:
+        conf = config[tipo]
+        try:
+            # Tenta conectar ao banco informado
+            conn = psycopg2.connect(
+                dbname="postgres",  # Conecta ao banco padrão para criar outro
+                user=conf["UID"],
+                password=conf["PWD"],
+                host=conf["SERVER"],
+                port=conf["PORT"]
+            )
+            conn.autocommit = True
+            cur = conn.cursor()
+
+            # Verifica se o banco já existe
+            cur.execute(f"SELECT 1 FROM pg_database WHERE datname = %s", (conf["DATABASE"],))
+            exists = cur.fetchone()
+            if not exists:
+                cur.execute(f'CREATE DATABASE "{conf["DATABASE"]}"')
+                print(f'Banco "{conf["DATABASE"]}" criado para {tipo}.')
+            else:
+                print(f'Banco "{conf["DATABASE"]}" já existe para {tipo}.')
+
+            cur.close()
+            conn.close()
+        except Exception as e:
+            print(f"Erro ao validar/criar banco {tipo}: {e}")
+
     with open(config_file, "w") as f:
-        for campo in campos_origem:
-            f.write(f"{campo.get()}\n")
-        for campo in campos_destino:
-            f.write(f"{campo.get()}\n")
+        json.dump(config, f, indent=4)
 
 def carregar_configuracao():
     if os.path.exists(config_file):
         with open(config_file, "r") as f:
-            linhas = f.readlines()
-            return [linha.strip() for linha in linhas]
+            config = json.load(f) 
+            campos_origem = [config["origem"].get(chave, "") for chave in ["DRIVER", "UID", "PWD", "DATABASE", "SERVER", "PORT", "DSN", "APP"]]
+            campos_destino = [config["destino"].get(chave, "") for chave in ["DRIVER", "UID", "PWD", "DATABASE", "SERVER", "PORT", "DSN", "APP"]]
+            return campos_origem + campos_destino
     return []
 
 def abrir_configurar_banco():
