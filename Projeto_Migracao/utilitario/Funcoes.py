@@ -341,9 +341,14 @@ def delete_lotes_v2(base_url,servico,lotes: list, token):
     return lotes_verificados
 
 def executa_query(cursor,query):
-    cursor.execute(query)
-    quantidade = cursor.fetchall()
-    return quantidade;
+    try:
+        cursor.execute(query)
+        quantidade = cursor.fetchall()
+        return quantidade
+    except pyodbc.Error as e:
+        cursor.rollback()
+        print("Erro ao executar SQL:", e)
+        return False
 
 def atualizar_retorno_lotes_tabela(cursor,sistema,tabela,lotes_processados, operacao):
     campo_atualizar = "id_gerado" if operacao == 'post' else "atualizado"
@@ -571,7 +576,26 @@ def resgate_arquivos_pasta_local(cursor,caminho_absolute,tabela):
 
 
 
+def colunas_sql(cursor, sql):
+    cursor.execute(sql)
+    colunas = [desc[0] for desc in cursor.description]
+    placeholders = ', '.join(['?'] * len(colunas))  # pyodbc usa '?'
+    return placeholders, colunas
 
+def execute_sql_extracao(cursor_extracao, cursor_envio, sql, servico):
+
+    placeholders, colunas = colunas_sql(cursor_extracao, sql)
+
+    colunas_update = [f"{col} = EXCLUDED.{col}" for col in colunas if col != 'id']
+    on_conflict = ', '.join(colunas_update)
+
+    insert_sql = f"""
+    INSERT INTO {servico} ({', '.join(colunas)})
+    VALUES ({placeholders}) 
+    ON CONFLICT (id) DO UPDATE SET {on_conflict}
+    """
+    retorno = executa_query(cursor_envio, insert_sql)
+    return retorno
 
 
 def ler_pasta_config_json(caminho):
@@ -592,9 +616,9 @@ def iniciar_extracao(cursor_extracao, cursor_envio, servico, funcao, caminho):
     with open(caminho + '/' + 'SQL_Extracao' + '/' + servico + '.sql', 'r', encoding='utf-8') as arquivo:
         script = arquivo.read()
 
-    retorno = executa_query(cursor_extracao, script)
-
     print(servico, funcao, script)
+    retorno = execute_sql_extracao(cursor_extracao, cursor_envio, script, servico)
+
     return True
 
 def iniciar_envios(cursor, servico, funcao):

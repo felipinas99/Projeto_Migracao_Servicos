@@ -138,6 +138,7 @@ def abrir_configurar_banco():
     botao_salvar = ttk.Button(configurar_banco_janela, text="Salvar", command=lambda: salvar_configuracao(entradas_origem, entradas_destino))
     botao_salvar.pack(pady=10)
 
+
 def criar_botao_servico(frame, funcao, servico, caminho, acao):
     botao = ttk.Button(
         frame,
