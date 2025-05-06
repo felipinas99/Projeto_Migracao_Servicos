@@ -4,6 +4,7 @@ from ttkbootstrap.dialogs import *
 from ttkbootstrap.tableview import *
 import random
 import os, json, psycopg2
+import threading
 
 config_file = "config_banco.json"
 
@@ -101,7 +102,7 @@ def salvar_configuracao(campos,campos_origem, campos_destino):
         "destino": {campo: campos_destino[i].get() for i, campo in enumerate(campos)}
     }
 
-    for tipo in ["origem", "destino"]:
+    for tipo in ["destino"]:
         conf = config[tipo]
         try:
             # Tenta conectar ao banco informado
@@ -185,25 +186,26 @@ def criar_botao_servico(frame, funcao, servico, caminho, acao):
 
 
 def acao_com_cor(botao, **kwargs):
-    # Pega os argumentos pelo nome
-    servico = kwargs.get("servico")  # Obtém o valor de 'servico'
-    funcao = kwargs.get("funcao")    # Obtém o valor de 'funcao'
-    acao = kwargs.get("acao")        # Obtém a função 'acao'
-    caminho = kwargs.get("caminho")        # Obtém a função 'caminho'
+    servico = kwargs.get("servico")
+    funcao = kwargs.get("funcao")
+    acao = kwargs.get("acao")
+    caminho = kwargs.get("caminho")
 
-    # Altera a cor do botão para indicar que foi acionado
-    botao.config( state="disabled", text=f"Processando {funcao}...")
+    botao.config(state="disabled", text=f"Processando {funcao}...")
 
-        # Chama a ação original
-    retorno = acao('', '', servico, funcao, caminho)
-        
-    # Simula a execução da ação e restaura o estado original
-    if retorno == True:
-        botao.after(0, lambda: botao.config(state="normal", text="Sucesso " + funcao , bootstyle="success"))
-    else:
-        botao.after(0, lambda: botao.config(state="normal", text="Falha " + funcao, bootstyle="danger"))
+    def run_acao():
+        retorno = acao(servico, caminho)
+        # Atualize o botão na thread principal
+        botao.after(0, lambda: atualizar_botao(botao, funcao, retorno))
 
-    botao.after(3000, lambda: botao.config(text=funcao , bootstyle="primary"))
+    def atualizar_botao(botao, funcao, retorno):
+        if retorno == True:
+            botao.config(state="normal", text="Sucesso " + funcao, bootstyle="success")
+        else:
+            botao.config(state="normal", text="Falha " + funcao, bootstyle="danger")
+        botao.after(3000, lambda: botao.config(text=funcao, bootstyle="primary"))
+
+    threading.Thread(target=run_acao).start()
 
 
 

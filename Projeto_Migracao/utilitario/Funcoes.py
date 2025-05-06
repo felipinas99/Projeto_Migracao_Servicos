@@ -573,29 +573,39 @@ def resgate_arquivos_pasta_local(cursor,caminho_absolute,tabela):
             print(f"Erro ao processar o arquivo {arquivo['nome_arquivo']}: {e}")
 
 
-
+def criar_cursor(opcao):
+    with open("config_banco.json", "r") as f:
+        config = json.load(f)
+    conf = config[opcao]
+    conn = iniciarCursorPostgresql(banco_dados=conf["DATABASE"],
+                            host=conf["SERVER"],
+                            porta=conf["PORT"],
+                            usuario=conf["UID"],
+                            senha=conf["PWD"])
+    return conn
 
 
 def colunas_sql(cursor, sql):
     cursor.execute(sql)
+    linhas = cursor.fetchall()
     colunas = [desc[0] for desc in cursor.description]
     placeholders = ', '.join(['?'] * len(colunas))  # pyodbc usa '?'
-    return placeholders, colunas
+    return placeholders, colunas, linhas
 
-def execute_sql_extracao(cursor_extracao, cursor_envio, sql, servico):
+def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela):
 
-    placeholders, colunas = colunas_sql(cursor_extracao, sql)
+    placeholders, colunas, linhas = colunas_sql(cursor_extracao, sql)
 
     colunas_update = [f"{col} = EXCLUDED.{col}" for col in colunas if col != 'id']
     on_conflict = ', '.join(colunas_update)
 
     insert_sql = f"""
-    INSERT INTO {servico} ({', '.join(colunas)})
+    INSERT INTO {tabela} ({', '.join(colunas)})
     VALUES ({placeholders}) 
     ON CONFLICT (id) DO UPDATE SET {on_conflict}
     """
-    retorno = executa_query(cursor_envio, insert_sql)
-    return retorno
+    cursor_envio.executemany(insert_sql, linhas)
+    return True
 
 
 def ler_pasta_config_json(caminho):
@@ -604,20 +614,19 @@ def ler_pasta_config_json(caminho):
     return config
 
 def ler_servicos_json(config):
-    return [item['nome'] for item in config["servicos"]]
+    return [{"nome": item["nome"], "tabela": item["tabela"]} for item in config["servicos"]]
 
 def listrar_arquivos(caminho, extensao):
     arquivos = [arquivo for arquivo in os.listdir(caminho) if arquivo.endswith('.'+extensao)]
     return arquivos
 
 
-
-def iniciar_extracao(cursor_extracao, cursor_envio, servico, funcao, caminho):
-    with open(caminho + '/' + 'SQL_Extracao' + '/' + servico + '.sql', 'r', encoding='utf-8') as arquivo:
+def iniciar_extracao(servico, caminho):
+    with open(caminho + '/' + 'SQL_Extracao' + '/' + servico["nome"] + '.sql', 'r', encoding='utf-8') as arquivo:
         script = arquivo.read()
-
-    print(servico, funcao, script)
-    retorno = execute_sql_extracao(cursor_extracao, cursor_envio, script, servico)
+    cursor_origem = criar_cursor('origem')
+    cursor_destino = criar_cursor('destino')
+    retorno = execute_sql_extracao(cursor_origem, cursor_destino, script, servico["tabela"])
 
     return True
 

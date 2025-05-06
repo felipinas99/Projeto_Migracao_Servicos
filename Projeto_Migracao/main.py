@@ -58,7 +58,7 @@ def main():
         frame_servico = ttk.Frame(scrollable_frame, padding="10 15 0 0")
         frame_servico.pack(pady=0, padx=0, fill=X)
 
-        label_servico = ttk.Label(frame_servico, text=servico, font=("Helvetica", 10))
+        label_servico = ttk.Label(frame_servico, text=servico["nome"], font=("Helvetica", 10))
         label_servico.pack(side=LEFT, padx=0)
 
         criar_botao_servico(frame_servico, 'Extrair', servico, caminho, iniciar_extracao)
