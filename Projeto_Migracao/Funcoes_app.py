@@ -5,7 +5,7 @@ from ttkbootstrap.tableview import *
 import random
 import os, json, psycopg2
 
-config_file = "config_banco.txt"
+config_file = "config_banco.json"
 
 def criar_rotulo(janela, texto, tamanho=14):
     rotulo = ttk.Label(janela, text=texto, font=("Helvetica", tamanho))
@@ -134,11 +134,15 @@ def salvar_configuracao(campos,campos_origem, campos_destino):
 
 def carregar_configuracao():
     if os.path.exists(config_file):
-        with open(config_file, "r") as f:
-            config = json.load(f) 
-            campos_origem = [config["origem"].get(chave, "") for chave in ["DRIVER", "UID", "PWD", "DATABASE", "SERVER", "PORT", "DSN", "APP"]]
-            campos_destino = [config["destino"].get(chave, "") for chave in ["DRIVER", "UID", "PWD", "DATABASE", "SERVER", "PORT", "DSN", "APP"]]
-            return campos_origem + campos_destino
+        try:
+            with open(config_file, "r") as f:
+                config = json.load(f) 
+                campos_origem = [config["origem"].get(chave, "") for chave in ["DRIVER", "UID", "PWD", "DATABASE", "SERVER", "PORT", "DSN", "APP"]]
+                campos_destino = [config["destino"].get(chave, "") for chave in ["DRIVER", "UID", "PWD", "DATABASE", "SERVER", "PORT", "DSN", "APP"]]
+                return campos_origem + campos_destino
+        except json.JSONDecodeError as e:
+            print(f"Erro ao carregar configuração: {e}")
+            return []
     return []
 
 def abrir_configurar_banco():
@@ -167,7 +171,7 @@ def abrir_configurar_banco():
                 entrada.insert(0, configuracoes.pop(0))
             entradas.append(entrada)
 
-    botao_salvar = ttk.Button(configurar_banco_janela, text="Salvar", command=lambda: salvar_configuracao(entradas_origem, entradas_destino))
+    botao_salvar = ttk.Button(configurar_banco_janela, text="Salvar", command=lambda: salvar_configuracao(campos,entradas_origem, entradas_destino))
     botao_salvar.pack(pady=10)
 
 
