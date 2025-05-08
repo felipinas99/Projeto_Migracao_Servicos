@@ -1,4 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS motor;
+CREATE SCHEMA IF NOT EXISTS controle;
+SET search_path TO motor;
 CREATE EXTENSION IF NOT EXISTS unaccent;
 
 CREATE OR REPLACE VIEW lotes_pendentes_envio AS
@@ -29,7 +31,7 @@ DO $$ BEGIN
 END $$;
 
 
-CREATE TABLE if not exists motor.controle_lotes (
+CREATE TABLE if not exists controle_lotes (
     id SERIAL PRIMARY KEY,  
     tipo_registro VARCHAR,  
     metodo metodo,

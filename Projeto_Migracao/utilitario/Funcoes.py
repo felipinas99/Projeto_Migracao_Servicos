@@ -1,4 +1,5 @@
 import json, math, requests, pyodbc, concurrent.futures, os, time
+import importlib
 from rapidfuzz import fuzz
 
 
@@ -607,6 +608,11 @@ def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela):
     cursor_envio.executemany(insert_sql, linhas)
     return True
 
+def procura_montagem(nome_arquivo, caminho):
+    arquivo = caminho+f"{nome_arquivo}.py"
+    modulo = importlib.import_module(arquivo)
+    funcao = getattr(modulo, "montar")
+    return (lambda lista: funcao(lista))
 
 def ler_pasta_config_json(caminho):
     with open(caminho + '/' + 'config.json', 'r') as file:
@@ -630,8 +636,17 @@ def iniciar_extracao(servico, caminho):
 
     return True
 
-def iniciar_envios(cursor, servico, funcao):
-    print(servico, funcao)
+def iniciar_envios(servico, caminho, funcao):
+
+    cursor_destino = criar_cursor('destino')
+    montagem = procura_montagem(servico, caminho)
+
+    lista = cursor_destino.execute(f"select * from {servico['tabela']} where id_gerado is null")
+
+
+    resultado = montagem(lista, funcao)
+
+    cursor_destino = criar_cursor('destino')
     return True
 
 def iniciar_atualizacao(cursor, servico, funcao):

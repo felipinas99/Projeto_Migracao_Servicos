@@ -194,7 +194,7 @@ def acao_com_cor(botao, **kwargs):
     botao.config(state="disabled", text=f"Processando {funcao}...")
 
     def run_acao():
-        retorno = acao(servico, caminho)
+        retorno = acao(servico, caminho, funcao)
         # Atualize o botão na thread principal
         botao.after(0, lambda: atualizar_botao(botao, funcao, retorno))
 
