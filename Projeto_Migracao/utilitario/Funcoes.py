@@ -1,5 +1,4 @@
-import json, math, requests, pyodbc, concurrent.futures, os, time
-import importlib
+import json, math, requests, pyodbc, concurrent.futures, os, time, sys, importlib
 from rapidfuzz import fuzz
 
 
@@ -531,9 +530,6 @@ def realizar_pesquisa_funcionarios_atual(url_login,url_pesquisa,dados_login):
 
 
 def similaridade(nome1, nome2):
-    """
-    Compara dois nomes de estados brasileiros e retorna o grau de similaridade (0 a 100).
-    """
     nome1 = nome1.strip().lower()
     nome2 = nome2.strip().lower()
     score = fuzz.WRatio(nome1, nome2)
@@ -608,11 +604,28 @@ def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela):
     cursor_envio.executemany(insert_sql, linhas)
     return True
 
+
+
+def processar_em_lotes(cursor, sql, funcao, func_montagem, tamanho_lote=50):
+    cursor.execute(sql)
+    while True:
+        linhas = cursor.fetchmany(tamanho_lote)
+        if not linhas:
+            break
+        # Se rows for lista de tuplas, converta para dict se necessário
+        # rows = [dict(zip([col[0] for col in cursor.description], row)) for row in rows]
+        yield func_montagem(linhas, funcao)
+
+
 def procura_montagem(nome_arquivo, caminho):
-    arquivo = caminho+f"{nome_arquivo}.py"
-    modulo = importlib.import_module(arquivo)
-    funcao = getattr(modulo, "montar")
-    return (lambda lista: funcao(lista))
+    arquivo = caminho+f"\\{nome_arquivo['nome']}"
+    modulo = importlib.import_module(arquivo.replace("\\", "."))
+    modulo_nome = f"{caminho}.{nome_arquivo['nome']}".replace("\\", ".").replace("/", ".")
+    modulo = importlib.import_module(modulo_nome)
+    return modulo
+
+    # funcao = getattr(modulo, "montar")
+    # return (lambda lista: funcao(lista))
 
 def ler_pasta_config_json(caminho):
     with open(caminho + '/' + 'config.json', 'r') as file:
@@ -621,6 +634,7 @@ def ler_pasta_config_json(caminho):
 
 def ler_servicos_json(config):
     return [{"nome": item["nome"], "tabela": item["tabela"]} for item in config["servicos"]]
+
 
 def listrar_arquivos(caminho, extensao):
     arquivos = [arquivo for arquivo in os.listdir(caminho) if arquivo.endswith('.'+extensao)]
@@ -637,16 +651,21 @@ def iniciar_extracao(servico, caminho):
     return True
 
 def iniciar_envios(servico, caminho, funcao):
-
+    
     cursor_destino = criar_cursor('destino')
     montagem = procura_montagem(servico, caminho)
 
     lista = cursor_destino.execute(f"select * from {servico['tabela']} where id_gerado is null")
+    print(lista.rowcount)
+    while True:
+        linhas = cursor_destino.fetchmany(50)
+        if not linhas:
+            break
+        lote = list(montagem.montar(linhas, funcao))  
+        print(f"Enviando lote com {len(lote)} itens")
+        
+        # enviar_lote(lote)  # sua função de envio aqui
 
-
-    resultado = montagem(lista, funcao)
-
-    cursor_destino = criar_cursor('destino')
     return True
 
 def iniciar_atualizacao(cursor, servico, funcao):
