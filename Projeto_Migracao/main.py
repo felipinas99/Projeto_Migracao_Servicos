@@ -8,8 +8,9 @@ base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if base_dir not in sys.path:
     sys.path.append(base_dir)
 
+
  
-caminho = 'Projeto_Migracao\\Servicos_Padrao'
+caminho = 'Servicos_Padrao'
 pasta_config = ler_pasta_config_json(caminho)
 servicos = ler_servicos_json(pasta_config)
 

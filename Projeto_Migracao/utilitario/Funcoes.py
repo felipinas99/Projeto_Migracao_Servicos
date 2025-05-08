@@ -116,11 +116,9 @@ def pesquisa_all(url, token, offset, limit, todos=True):
 
     return lista
 
-def criar_lotes(envios, tamanho_lote=99):
-    if isinstance(envios, dict):
-        envios = list(envios.values())
-    lotes = [envios[i:i + tamanho_lote] for i in range(0, len(envios), tamanho_lote)]
-    return lotes
+def postagem(envios, tamanho_lote=99):
+
+    threading.Thread(target=run_acao).start()
 
 def deletar_lotes(lotes: list, url, token):
     headers['Authorization']=token
@@ -641,7 +639,7 @@ def listrar_arquivos(caminho, extensao):
     return arquivos
 
 
-def iniciar_extracao(servico, caminho):
+def iniciar_extracao(servico, caminho, funcao):
     with open(caminho + '/' + 'SQL_Extracao' + '/' + servico["nome"] + '.sql', 'r', encoding='utf-8') as arquivo:
         script = arquivo.read()
     cursor_origem = criar_cursor('origem')
@@ -652,19 +650,30 @@ def iniciar_extracao(servico, caminho):
 
 def iniciar_envios(servico, caminho, funcao):
     
-    cursor_destino = criar_cursor('destino')
+    inicio = time.time()
+    cursor_insercao = criar_cursor('destino')
+    cursor_controle_lotes = criar_cursor('destino')
     montagem = procura_montagem(servico, caminho)
 
-    lista = cursor_destino.execute(f"select * from {servico['tabela']} where id_gerado is null")
-    print(lista.rowcount)
+    
+    cursor_insercao.execute(f"select * from {servico['tabela']} where id_gerado is null")
+    
     while True:
-        linhas = cursor_destino.fetchmany(50)
+        linhas = cursor_insercao.fetchmany(50)
         if not linhas:
             break
-        lote = list(montagem.montar(linhas, funcao))  
-        print(f"Enviando lote com {len(lote)} itens")
+
+        lote = montagem.montar(linhas, funcao)
+        sql = '''
+            INSERT INTO motor.controle_lotes(metodo, tipo_registro, lote_envio)
+            VALUES (?, ?, ?)
+        '''
+        params = ('POST', servico['tabela'], json.dumps(lote))
+        cursor_controle_lotes.execute(sql, params)
+        cursor_controle_lotes.execute("commit;")
         
-        # enviar_lote(lote)  # sua função de envio aqui
+    fim = time.time()
+    print(f"Tempo decorrido: {fim - inicio:.4f} segundos")
 
     return True
 
