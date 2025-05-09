@@ -1,15 +1,16 @@
+import threading
 from tkinter import BOTTOM, CENTER, LEFT, X
-import ttkbootstrap as ttk 
+import ttkbootstrap as ttk ,os, sys
 from Funcoes_app import criar_rotulo, criar_botao_servico, cria_frame_tabela, abrir_configurar_banco
-from utilitario.Funcoes import ler_pasta_config_json, ler_servicos_json, iniciar_delete, iniciar_atualizacao, iniciar_envios, iniciar_extracao
-import os, sys
+from utilitario.Funcoes import ler_pasta_config_json, ler_servicos_json, iniciar_delete, iniciar_atualizacao, iniciar_envios, iniciar_extracao, postagem, get_lotes
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if base_dir not in sys.path:
     sys.path.append(base_dir)
 
 
- 
+threading.Thread(target=postagem).start()
+threading.Thread(target=get_lotes).start()
 caminho = 'Servicos_Padrao'
 pasta_config = ler_pasta_config_json(caminho)
 servicos = ler_servicos_json(pasta_config)

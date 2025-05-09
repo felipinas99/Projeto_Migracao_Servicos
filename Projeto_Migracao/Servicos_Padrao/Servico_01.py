@@ -4,13 +4,13 @@ def montar(lista, funcao):
         dado = {
             "idIntegracao": item.id,
             "conteudo": {
-                "nome": item.nome,
-                "cpfcnpj": item.cpfcnpj,
-                "dt_nascimento": item.dt_nascimento,
-                "situacao": item.situacao,
-                "teste": {
-                    "ddd": item.id
-                }
+                "nom2e": item.nome,
+                # "cpfcnpj": item.cpfcnpj,
+                # "dt_nascimento": item.dt_nascimento,
+                # "situacao": item.situacao,
+                # "teste": {
+                    # "ddd": item.id
+                # }
             }
         }
         if funcao == 'ATUALIZAR':

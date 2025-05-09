@@ -116,9 +116,6 @@ def pesquisa_all(url, token, offset, limit, todos=True):
 
     return lista
 
-def postagem(envios, tamanho_lote=99):
-
-    threading.Thread(target=run_acao).start()
 
 def deletar_lotes(lotes: list, url, token):
     headers['Authorization']=token
@@ -214,9 +211,6 @@ def verifica_lotes(lotes: list, url, token):
             except requests.exceptions.RequestException as e:
                 print(f"Erro ao fazer a requisição: {e}")
                 continue
-
-
-
     return lista
 
 
@@ -567,17 +561,95 @@ def resgate_arquivos_pasta_local(cursor,caminho_absolute,tabela):
         except Exception as e:
             print(f"Erro ao processar o arquivo {arquivo['nome_arquivo']}: {e}")
 
+def postar(lote):
+                       
+    headers['Authorization']='Bearer 67d1c17e-833b-4e4d-8e8c-c45e832b4666'
+    try:
+        response = requests.post(url='https://api.protocolo.betha.cloud/protocolo/service-layer/v1/api/pessoa', data=lote, headers=headers)
+        return response.json()
+    except Exception as e:
+        return 'erro'
+
+def postagem():
+    cursor = criar_cursor('destino')
+    cursor_atualiza = criar_cursor('destino')
+    while True:
+        cursor.execute('select * from motor.lotes_pendentes_envio')
+        while True:
+            lista = cursor.fetchmany(50)
+            if not lista:
+                time.sleep(5)
+                break
+            for lote in lista:
+                inicio = time.time()
+                retorno = postar(lote.lote_envio)
+                if retorno == 'erro':
+                    cursor_atualiza.execute('''UPDATE motor.controle_lotes set status_envio = 'ERRO' where id = ?''')
+                    params = (lote.id)
+                    cursor_atualiza.execute(sql, params)
+                    cursor_atualiza.execute("commit")
+                    continue
+                sql = '''UPDATE motor.controle_lotes set status_envio = 'ENVIADO', lote_id = ? where id = ?'''
+                params = (retorno['id'],lote.id)
+                cursor_atualiza.execute(sql, params)
+                cursor_atualiza.execute("commit")
+                
+                fim = time.time()
+                print(f"Tempo decorrido: {fim - inicio:.4f} segundos")
+
+def get_lote(lote_id):
+    headers['Authorization']='Bearer 67d1c17e-833b-4e4d-8e8c-c45e832b4666'
+    try:
+        response = requests.get(url='https://api.protocolo.betha.cloud/protocolo/service-layer/v1/api/pessoa/lotes/'+lote_id, headers=headers)
+        resultado = response.json()
+        if resultado['situacao'] in ('EXECUTANDO'):
+            return resultado,'EXECUTANDO'
+        elif resultado['situacao'] in ('ERRO','ERROR'):
+            return resultado,'ERRO'
+        elif resultado['situacao'] in ('EXECUTADO'):
+            return resultado,'EXECUTADO'
+    except Exception as e:
+        return 'erro'
+
+def get_lotes():
+    cursor = criar_cursor('destino')
+    cursor_atualiza = criar_cursor('destino')
+    while True:
+        cursor.execute('select * from lotes_pendentes_processamento lpp')
+        while True:
+            lista = cursor.fetchmany(50)
+            if not lista:
+                time.sleep(5)
+                break
+            for lote in lista:
+                inicio = time.time()
+                retorno, situacao = get_lote(lote.lote_envio)
+                if retorno in 'EXECUTADO':
+                    cursor_atualiza.execute('''UPDATE motor.controle_lotes set status_envio = 'ERRO' where id = ?''')
+                    params = (lote.id)
+                    cursor_atualiza.execute(sql, params)
+                    cursor_atualiza.execute("commit")
+                    continue
+                sql = '''UPDATE motor.controle_lotes set status_envio = 'ENVIADO', lote_id = ? where id = ?'''
+                params = (retorno['id'],lote.id)
+                cursor_atualiza.execute(sql, params)
+                cursor_atualiza.execute("commit")
+                
+                fim = time.time()
+                print(f"Tempo decorrido: {fim - inicio:.4f} segundos")
+
+
 
 def criar_cursor(opcao):
     with open("config_banco.json", "r") as f:
         config = json.load(f)
     conf = config[opcao]
-    conn = iniciarCursorPostgresql(banco_dados=conf["DATABASE"],
+    cursor = iniciarCursorPostgresql(banco_dados=conf["DATABASE"],
                             host=conf["SERVER"],
                             porta=conf["PORT"],
                             usuario=conf["UID"],
                             senha=conf["PWD"])
-    return conn
+    return cursor
 
 
 def colunas_sql(cursor, sql):
@@ -604,26 +676,12 @@ def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela):
 
 
 
-def processar_em_lotes(cursor, sql, funcao, func_montagem, tamanho_lote=50):
-    cursor.execute(sql)
-    while True:
-        linhas = cursor.fetchmany(tamanho_lote)
-        if not linhas:
-            break
-        # Se rows for lista de tuplas, converta para dict se necessário
-        # rows = [dict(zip([col[0] for col in cursor.description], row)) for row in rows]
-        yield func_montagem(linhas, funcao)
-
-
 def procura_montagem(nome_arquivo, caminho):
     arquivo = caminho+f"\\{nome_arquivo['nome']}"
     modulo = importlib.import_module(arquivo.replace("\\", "."))
     modulo_nome = f"{caminho}.{nome_arquivo['nome']}".replace("\\", ".").replace("/", ".")
     modulo = importlib.import_module(modulo_nome)
     return modulo
-
-    # funcao = getattr(modulo, "montar")
-    # return (lambda lista: funcao(lista))
 
 def ler_pasta_config_json(caminho):
     with open(caminho + '/' + 'config.json', 'r') as file:
@@ -662,7 +720,7 @@ def iniciar_envios(servico, caminho, funcao):
         linhas = cursor_insercao.fetchmany(50)
         if not linhas:
             break
-
+        
         lote = montagem.montar(linhas, funcao)
         sql = '''
             INSERT INTO motor.controle_lotes(metodo, tipo_registro, lote_envio)
