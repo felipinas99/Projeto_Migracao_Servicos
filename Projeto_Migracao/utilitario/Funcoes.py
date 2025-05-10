@@ -563,7 +563,7 @@ def resgate_arquivos_pasta_local(cursor,caminho_absolute,tabela):
 
 def postar(lote):
                        
-    headers['Authorization']='Bearer 67d1c17e-833b-4e4d-8e8c-c45e832b4666'
+    headers['Authorization']='Bearer 67d1c17e-833b-4e4d-8e8c-c45e832b466'
     try:
         response = requests.post(url='https://api.protocolo.betha.cloud/protocolo/service-layer/v1/api/pessoa', data=lote, headers=headers)
         return response.json()
@@ -590,32 +590,55 @@ def postagem():
                     cursor_atualiza.execute("commit")
                     continue
                 sql = '''UPDATE motor.controle_lotes set status_envio = 'ENVIADO', lote_id = ? where id = ?'''
-                params = (retorno['id'],lote.id)
+                params = (retorno.get('id'),lote.id)
                 cursor_atualiza.execute(sql, params)
                 cursor_atualiza.execute("commit")
                 
                 fim = time.time()
-                print(f"Tempo decorrido: {fim - inicio:.4f} segundos")
+                print(f"Tempo decorrido Post: {fim - inicio:.4f} segundos")
+
 
 def get_lote(lote_id):
-    headers['Authorization']='Bearer 67d1c17e-833b-4e4d-8e8c-c45e832b4666'
+    headers = {'Authorization': 'Bearer 67d1c17e-833b-4e4d-8e8c-c45e832b4666'}
+
     try:
-        response = requests.get(url='https://api.protocolo.betha.cloud/protocolo/service-layer/v1/api/pessoa/lotes/'+lote_id, headers=headers)
+        response = requests.get(
+            url=f'https://api.protocolo.betha.cloud/protocolo/service-layer/v1/api/pessoa/lotes/{lote_id}',
+            headers=headers
+        )
+        # response.raise_for_status()
         resultado = response.json()
-        if resultado['situacao'] in ('EXECUTANDO'):
-            return resultado,'EXECUTANDO'
-        elif resultado['situacao'] in ('ERRO','ERROR'):
-            return resultado,'ERRO'
-        elif resultado['situacao'] in ('EXECUTADO'):
-            return resultado,'EXECUTADO'
+
+        situacao = resultado.get('situacao')
+        match situacao:
+            case 'EXECUTANDO':
+                return resultado, 'PROCESSANDO'
+            case 'ERRO' | 'ERROR':
+                return resultado, 'ERRO'
+            case 'EXECUTADO' | 'PROCESSADO':
+                return resultado, 'PROCESSADO'
+            case 'AGUARDANDO_EXECUCAO':
+                return resultado, 'AGUARDANDO_EXECUCAO'
+            case _:
+                print(f"Situação desconhecida ou ausente: {situacao}")
+                return resultado, 'ERRO'
+
+    except requests.exceptions.RequestException as e:
+        print(f"Erro na requisição: {e}")
+        return {}, 'ERRO'
+    except ValueError as e:
+        print(f"Erro ao decodificar JSON: {e}")
+        print(f"Resposta bruta (para análise): {response.text}")
+        return {}, 'ERRO'
     except Exception as e:
-        return 'erro'
+        print(f"Erro inesperado: {e}")
+        return {}, 'ERRO'
 
 def get_lotes():
     cursor = criar_cursor('destino')
     cursor_atualiza = criar_cursor('destino')
     while True:
-        cursor.execute('select * from lotes_pendentes_processamento lpp')
+        cursor.execute('select * from motor.lotes_pendentes_processamento lpp')
         while True:
             lista = cursor.fetchmany(50)
             if not lista:
@@ -623,20 +646,18 @@ def get_lotes():
                 break
             for lote in lista:
                 inicio = time.time()
-                retorno, situacao = get_lote(lote.lote_envio)
-                if retorno in 'EXECUTADO':
-                    cursor_atualiza.execute('''UPDATE motor.controle_lotes set status_envio = 'ERRO' where id = ?''')
-                    params = (lote.id)
+                retorno, situacao = get_lote(lote.lote_id)  # Sempre retorna valores válidos
+                if situacao in ('PROCESSADO','AGUARDANDO_EXECUCAO','EXECUTANDO'):
+                    sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_recebido = ? where id = ?'''
+                    params = (situacao, json.dumps(retorno), lote.id)
                     cursor_atualiza.execute(sql, params)
                     cursor_atualiza.execute("commit")
+                    fim = time.time()
+                    print(f"Tempo decorrido get: {fim - inicio:.4f} segundos")
                     continue
-                sql = '''UPDATE motor.controle_lotes set status_envio = 'ENVIADO', lote_id = ? where id = ?'''
-                params = (retorno['id'],lote.id)
-                cursor_atualiza.execute(sql, params)
-                cursor_atualiza.execute("commit")
                 
                 fim = time.time()
-                print(f"Tempo decorrido: {fim - inicio:.4f} segundos")
+                print(f"Tempo decorrido get: {fim - inicio:.4f} segundos")
 
 
 
