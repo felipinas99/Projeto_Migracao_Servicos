@@ -14,9 +14,15 @@
             "nome": "Servico_03",
             "tabela": "servico_03",
             "url": "https://example.com/servico3"
-        },{
+        },
+        {
             "nome": "contribuintes",
             "tabela": "contribuintes2",
+            "url": "https://example.com/servico3"
+        },
+        {
+            "nome": "pessoa",
+            "tabela": "servico_01",
             "url": "https://example.com/servico3"
         }
     ],

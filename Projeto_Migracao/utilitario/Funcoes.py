@@ -563,10 +563,16 @@ def resgate_arquivos_pasta_local(cursor,caminho_absolute,tabela):
 
 def postar(lote):
                        
-    headers['Authorization']='Bearer 67d1c17e-833b-4e4d-8e8c-c45e832b466'
+    headers['Authorization']='Bearer 67d1c17e-833b-4e4d-8e8c-c45e832b4666'
+
     try:
         response = requests.post(url='https://api.protocolo.betha.cloud/protocolo/service-layer/v1/api/pessoa', data=lote, headers=headers)
-        return response.json()
+        
+        retorno = response.json()
+
+        if retorno.get('id') != None:
+            return retorno, 'ENVIADO'
+        return retorno, 'ERRO'
     except Exception as e:
         return 'erro'
 
@@ -582,24 +588,17 @@ def postagem():
                 break
             for lote in lista:
                 inicio = time.time()
-                retorno = postar(lote.lote_envio)
-                if retorno == 'erro':
-                    cursor_atualiza.execute('''UPDATE motor.controle_lotes set status_envio = 'ERRO' where id = ?''')
-                    params = (lote.id)
-                    cursor_atualiza.execute(sql, params)
-                    cursor_atualiza.execute("commit")
-                    continue
-                sql = '''UPDATE motor.controle_lotes set status_envio = 'ENVIADO', lote_id = ? where id = ?'''
-                params = (retorno.get('id'),lote.id)
+                retorno, situacao = postar(lote.lote_envio)
+                sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_id = ?, lote_envio_retorno = ?  where id = ?'''
+                params = (situacao, retorno.get('id'), json.dumps(retorno), lote.id)
                 cursor_atualiza.execute(sql, params)
                 cursor_atualiza.execute("commit")
                 
                 fim = time.time()
                 print(f"Tempo decorrido Post: {fim - inicio:.4f} segundos")
 
-
 def get_lote(lote_id):
-    headers = {'Authorization': 'Bearer 67d1c17e-833b-4e4d-8e8c-c45e832b4666'}
+    headers = {'Authorization': 'Bearer 67d1c17e-833b-4e4d-8e8c-c45e832b466'}
 
     try:
         response = requests.get(
@@ -659,6 +658,38 @@ def get_lotes():
                 fim = time.time()
                 print(f"Tempo decorrido get: {fim - inicio:.4f} segundos")
 
+# def atualiza_retorno_lote_item(lote):
+#     pass
+
+def atualiza_retorno_lote_itens():
+    cursor = criar_cursor('destino')
+    cursor_atualiza = criar_cursor('destino')
+    while True:
+        cursor.execute('select * from motor.lotes_pendentes_resgate lpp')
+        while True:
+            lista = cursor.fetchmany(50)
+            if not lista:
+                time.sleep(5)
+                break
+            for lote in lista:
+                retorno = json.loads(lote.lote_recebido)['retorno']
+                if not retorno:
+                    continue
+                for item in retorno:
+                    if item['idGerado'] == None:
+                        sql = f'''UPDATE public.{lote.tipo_registro} set mensagem = ? where id = ?'''
+                        params = (item['mensagem'], item['idIntegracao'])
+                        cursor_atualiza.execute(sql, params)
+                        cursor_atualiza.execute("commit")
+                        continue
+                    sql = f'''UPDATE public.{lote.tipo_registro} set id_gerado = ? where id = ?'''
+                    params = (item['idGerado'], item['idIntegracao'])
+                    cursor_atualiza.execute(sql, params)
+                    cursor_atualiza.execute("commit")
+                sql = f'''UPDATE motor.controle_lotes set ids_atualizados = true where id = ?'''
+                params = (lote.id)
+                cursor_atualiza.execute(sql, params)
+                cursor_atualiza.execute("commit")
 
 
 def criar_cursor(opcao):

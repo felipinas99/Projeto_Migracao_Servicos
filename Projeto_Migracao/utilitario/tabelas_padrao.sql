@@ -22,6 +22,7 @@ CREATE TABLE if not exists controle_lotes (
     metodo metodo,
     lote_envio JSONB,
     status_envio status_lote_envio,
+    lote_envio_retorno JSONB,
     lote_id  varchar,
     lote_recebido JSONB ,
     ids_atualizados BOOLEAN DEFAULT false
@@ -41,6 +42,6 @@ WHERE status_envio in ('ENVIADO', 'PROCESSANDO', 'AGUARDANDO_EXECUCAO') and lote
 CREATE OR REPLACE VIEW lotes_pendentes_resgate AS
 SELECT id, tipo_registro, lote_recebido
 FROM controle_lotes
-WHERE status_envio in ('PROCESSADO') and lote_id is not null and ids_atualizados = false;
+WHERE status_envio in ('PROCESSADO') and lote_id is not null and ids_atualizados = false and lote_recebido is null;
 
 commit;
