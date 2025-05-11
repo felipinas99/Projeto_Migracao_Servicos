@@ -28,6 +28,13 @@ CREATE TABLE if not exists controle_lotes (
     ids_atualizados BOOLEAN DEFAULT false
 );
 
+CREATE TABLE IF NOT EXISTS parametros (
+    id SERIAL PRIMARY KEY,  
+    tipo_parametro VARCHAR PRIMARY KEY,
+    valor VARCHAR
+);
+
+
 
 CREATE OR REPLACE VIEW lotes_pendentes_envio AS
 SELECT id, tipo_registro, lote_envio

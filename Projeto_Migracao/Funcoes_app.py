@@ -6,6 +6,8 @@ import random
 import os, json, psycopg2
 import threading
 
+from utilitario.Funcoes import criar_cursor
+
 config_file = "config_banco.json"
 
 def criar_rotulo(janela, texto, tamanho=14):
@@ -146,6 +148,12 @@ def carregar_configuracao():
             return []
     return []
 
+def carregar_dados_tabela(tabela):
+    cursor = criar_cursor('destino')
+    cursor.execute(f'select * from motor.{tabela}')
+    dados = cursor.fetchall()
+    return dados
+
 def abrir_configurar_banco():
     configurar_banco_janela = ttk.Toplevel()  # Usando ttkbootstrap para criar a janela
     configurar_banco_janela.title("Configurar Banco")
@@ -173,6 +181,50 @@ def abrir_configurar_banco():
             entradas.append(entrada)
 
     botao_salvar = ttk.Button(configurar_banco_janela, text="Salvar", command=lambda: salvar_configuracao(campos,entradas_origem, entradas_destino))
+    botao_salvar.pack(pady=10)
+    
+def abrir_parametros():
+    configurar_banco_janela = ttk.Toplevel()
+    configurar_banco_janela.title("Configurar Parametros")
+    configurar_banco_janela.geometry("900x700+0+0")
+
+    frame = ttk.Frame(configurar_banco_janela, padding="5 5 5 5")
+    frame.pack(side="left", fill="both", expand=True)
+
+    campos = ["Token"]
+    parametros = []
+
+    configuracoes = carregar_dados_tabela('parametros')
+    configuracoes_dict = {linha[1]: linha[2] for linha in configuracoes}  # Supondo que a estrutura seja (id, tipo_parametro, valor)
+
+    for frame, titulo, entradas in [(frame, "Parametros", parametros)]:
+        criar_rotulo(frame, f"Configurar Parâmetros ({titulo})", 14)
+        for campo in campos:
+            criar_rotulo(frame, f"{campo}:", 14)
+            entrada = criar_entrada(frame, 14)
+            # Insere o valor correspondente ao campo, se existir no dicionário
+            if campo in configuracoes_dict:
+                entrada.insert(0, configuracoes_dict[campo])
+            entradas.append(entrada)
+
+    def salvar_parametros():
+        for i, campo in enumerate(campos):
+            valor = parametros[i].get()  # Obtém o valor do campo
+            try:
+                cursor = criar_cursor('destino')
+                # Atualiza ou insere o valor no banco de dados
+                cursor.execute(
+                    "INSERT INTO motor.parametros (tipo_parametro, valor) VALUES (?, ?) "
+                    "ON CONFLICT (tipo_parametro) DO UPDATE SET valor = EXCLUDED.valor",
+                    (campo, valor)
+                )       
+                cursor.execute("commit")
+                print(f"Parâmetro '{campo}' salvo com sucesso!")
+            except Exception as e:
+                print(f"Erro ao salvar o parâmetro '{campo}': {e}")
+
+    # Botão para salvar os dados
+    botao_salvar = ttk.Button(configurar_banco_janela, text="Salvar", command=salvar_parametros)
     botao_salvar.pack(pady=10)
 
 

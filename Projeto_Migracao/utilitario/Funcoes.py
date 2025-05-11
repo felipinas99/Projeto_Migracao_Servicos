@@ -561,9 +561,14 @@ def resgate_arquivos_pasta_local(cursor,caminho_absolute,tabela):
         except Exception as e:
             print(f"Erro ao processar o arquivo {arquivo['nome_arquivo']}: {e}")
 
-def postar(lote):
+def busca_token():
+    cursor = criar_cursor('destino')
+    cursor.execute('''select * from motor.parametros where tipo_parametro = 'Token' ''')
+    return cursor.fetchone().valor
+
+def postar(lote,token):
                        
-    headers['Authorization']='Bearer 67d1c17e-833b-4e4d-8e8c-c45e832b4666'
+    headers['Authorization']=f'Bearer {token}'
 
     try:
         response = requests.post(url='https://api.protocolo.betha.cloud/protocolo/service-layer/v1/api/pessoa', data=lote, headers=headers)
@@ -577,6 +582,7 @@ def postar(lote):
         return 'erro'
 
 def postagem():
+    token  = busca_token()
     cursor = criar_cursor('destino')
     cursor_atualiza = criar_cursor('destino')
     while True:
@@ -588,7 +594,7 @@ def postagem():
                 break
             for lote in lista:
                 inicio = time.time()
-                retorno, situacao = postar(lote.lote_envio)
+                retorno, situacao = postar(lote.lote_envio, token)
                 sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_id = ?, lote_envio_retorno = ?  where id = ?'''
                 params = (situacao, retorno.get('id'), json.dumps(retorno), lote.id)
                 cursor_atualiza.execute(sql, params)
@@ -597,8 +603,8 @@ def postagem():
                 fim = time.time()
                 print(f"Tempo decorrido Post: {fim - inicio:.4f} segundos")
 
-def get_lote(lote_id):
-    headers = {'Authorization': 'Bearer 67d1c17e-833b-4e4d-8e8c-c45e832b466'}
+def get_lote(lote_id, token):
+    headers['Authorization']=f'Bearer {token}'
 
     try:
         response = requests.get(
@@ -634,6 +640,7 @@ def get_lote(lote_id):
         return {}, 'ERRO'
 
 def get_lotes():
+    token  = busca_token()
     cursor = criar_cursor('destino')
     cursor_atualiza = criar_cursor('destino')
     while True:
@@ -645,7 +652,7 @@ def get_lotes():
                 break
             for lote in lista:
                 inicio = time.time()
-                retorno, situacao = get_lote(lote.lote_id)  # Sempre retorna valores válidos
+                retorno, situacao = get_lote(lote.lote_id, token)  # Sempre retorna valores válidos
                 if situacao in ('PROCESSADO','AGUARDANDO_EXECUCAO','EXECUTANDO'):
                     sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_recebido = ? where id = ?'''
                     params = (situacao, json.dumps(retorno), lote.id)
