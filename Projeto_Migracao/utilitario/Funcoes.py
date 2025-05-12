@@ -1,4 +1,4 @@
-import json, math, requests, pyodbc, concurrent.futures, os, time, sys, importlib
+import json, math, requests, pyodbc, concurrent.futures, os, time, sys, importlib, sqlparse
 from rapidfuzz import fuzz
 
 
@@ -29,7 +29,7 @@ def iniciarCursorSybase(dsn, usuario, senha, app="APP=BTLS=V2Y7Uq9RxaIfCU87u8ugN
 
     return cursor
 
-def iniciarCursorPostgresql(host, banco_dados, porta, usuario, senha, driver="PostgreSQL Unicode"):
+def iniciarCursorPostgresql(host, banco_dados, porta, usuario, senha, driver="PostgreSQL ANSI"):
     conn_str = (
     f'DRIVER={driver};'
     f'UID={usuario};'
@@ -39,6 +39,7 @@ def iniciarCursorPostgresql(host, banco_dados, porta, usuario, senha, driver="Po
     f'Port={porta};'
 )
     try:
+        pyodbc.setDecimalSeparator(".")
         conn = pyodbc.connect(conn_str)
         return conn.cursor()
     except Exception as e:
@@ -761,9 +762,10 @@ def listrar_arquivos(caminho, extensao):
 def iniciar_extracao(servico, caminho, funcao):
     with open(caminho + '/' + 'SQL_Extracao' + '/' + servico["nome"] + '.sql', 'r', encoding='utf-8') as arquivo:
         script = arquivo.read()
+        script_formatado = sqlparse.format(script, reindent=True, keyword_case='upper')
     cursor_origem = criar_cursor('origem')
     cursor_destino = criar_cursor('destino')
-    retorno = execute_sql_extracao(cursor_origem, cursor_destino, script, servico["tabela"])
+    retorno = execute_sql_extracao(cursor_origem, cursor_destino, script_formatado, servico["tabela"])
 
     return True
 
