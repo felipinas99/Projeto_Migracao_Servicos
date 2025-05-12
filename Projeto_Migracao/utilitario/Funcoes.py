@@ -566,16 +566,16 @@ def busca_token():
     cursor.execute('''select * from motor.parametros where tipo_parametro = 'Token' ''')
     return cursor.fetchone().valor
 
-def postar(lote,token):
+def postar(lote,token,servico):
                        
     headers['Authorization']=f'Bearer {token}'
 
     try:
-        response = requests.post(url='https://api.protocolo.betha.cloud/protocolo/service-layer/v1/api/pessoa', data=lote, headers=headers)
+        response = requests.post(url='https://nota-eletronica.betha.cloud/service-layer/api/'+servico, data=lote, headers=headers)
         
         retorno = response.json()
-
-        if retorno.get('id') != None:
+        id_lote = retorno.get('id') or retorno.get('idLote')
+        if id_lote != None:
             return retorno, 'ENVIADO'
         return retorno, 'ERRO'
     except Exception as e:
@@ -593,22 +593,23 @@ def postagem():
                 time.sleep(5)
                 break
             for lote in lista:
-                inicio = time.time()
-                retorno, situacao = postar(lote.lote_envio, token)
+                # inicio = time.time()
+                id_lote = retorno.get('id') or retorno.get('idLote')
+                retorno, situacao = postar(lote.lote_envio, token, lote.tipo_servico)
                 sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_id = ?, lote_envio_retorno = ?  where id = ?'''
-                params = (situacao, retorno.get('id'), json.dumps(retorno), lote.id)
+                params = (situacao, retorno.get('id'), json.dumps(retorno), id_lote)
                 cursor_atualiza.execute(sql, params)
                 cursor_atualiza.execute("commit")
                 
-                fim = time.time()
-                print(f"Tempo decorrido Post: {fim - inicio:.4f} segundos")
+                # fim = time.time()
+                # print(f"Tempo decorrido Post: {fim - inicio:.4f} segundos")
 
 def get_lote(lote_id, token):
     headers['Authorization']=f'Bearer {token}'
 
     try:
         response = requests.get(
-            url=f'https://api.protocolo.betha.cloud/protocolo/service-layer/v1/api/pessoa/lotes/{lote_id}',
+            url=f'https://nota-eletronica.betha.cloud/service-layer/api/consulta/{lote_id}',
             headers=headers
         )
         # response.raise_for_status()
@@ -620,7 +621,7 @@ def get_lote(lote_id, token):
                 return resultado, 'PROCESSANDO'
             case 'ERRO' | 'ERROR':
                 return resultado, 'ERRO'
-            case 'EXECUTADO' | 'PROCESSADO':
+            case 'EXECUTADO' | 'PROCESSADO' | 'EXECUTADO_OK':
                 return resultado, 'PROCESSADO'
             case 'AGUARDANDO_EXECUCAO':
                 return resultado, 'AGUARDANDO_EXECUCAO'
@@ -651,11 +652,12 @@ def get_lotes():
                 time.sleep(5)
                 break
             for lote in lista:
+                id_lote = retorno.get('id') or retorno.get('idLote')
                 inicio = time.time()
                 retorno, situacao = get_lote(lote.lote_id, token)  # Sempre retorna valores válidos
                 if situacao in ('PROCESSADO','AGUARDANDO_EXECUCAO','EXECUTANDO'):
                     sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_recebido = ? where id = ?'''
-                    params = (situacao, json.dumps(retorno), lote.id)
+                    params = (situacao, json.dumps(retorno), id_lote)
                     cursor_atualiza.execute(sql, params)
                     cursor_atualiza.execute("commit")
                     fim = time.time()
@@ -726,7 +728,7 @@ def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela):
     on_conflict = ', '.join(colunas_update)
 
     insert_sql = f"""
-    INSERT INTO {tabela} ({', '.join(colunas)})
+    INSERT INTO controle.{tabela} ({', '.join(colunas)})
     VALUES ({placeholders}) 
     ON CONFLICT (id) DO UPDATE SET {on_conflict}
     """
