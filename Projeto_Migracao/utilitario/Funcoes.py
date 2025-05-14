@@ -253,19 +253,29 @@ def colunas_sql(cursor, sql):
     placeholders = ', '.join(['?'] * len(colunas)) 
     return placeholders, colunas, linhas
 
-def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela):
-
+def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql=500):
     placeholders, colunas, linhas = colunas_sql(cursor_extracao, sql)
 
     colunas_update = [f"{col} = EXCLUDED.{col}" for col in colunas if col != 'id']
     on_conflict = ', '.join(colunas_update)
 
-    insert_sql = f"""
-    INSERT INTO controle.{tabela} ({', '.join(colunas)})
-    VALUES ({placeholders}) 
-    ON CONFLICT (id) DO UPDATE SET {on_conflict}
-    """
-    cursor_envio.executemany(insert_sql, linhas)
+    colunas_sql_str = ', '.join(colunas)
+    linha_placeholder = f"({', '.join(['?'] * len(colunas))})"
+
+    for i in range(0, len(linhas), tamanho_sql):
+        batch = linhas[i:i + tamanho_sql]
+
+        all_placeholders = ', '.join([linha_placeholder] * len(batch))
+        flat_values = [valor for linha in batch for valor in linha]  
+
+        insert_sql = f"""
+        INSERT INTO controle.{tabela} ({colunas_sql_str})
+        VALUES {all_placeholders}
+        ON CONFLICT (id) DO UPDATE SET {on_conflict}
+        """
+
+        cursor_envio.execute(insert_sql, flat_values)
+
     cursor_envio.execute("commit")
 
 def procura_montagem(nome_arquivo, caminho):
