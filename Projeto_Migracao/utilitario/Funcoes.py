@@ -72,9 +72,41 @@ def busca_parametro(parametro):
     cursor.close()
     return valor
 
+def envios(servico, caminho, funcao):
+    try:
+        metodo = ''
+        cursor_insercao = criar_cursor('destino')
+        cursor_controle_lotes = criar_cursor('destino')
+        montagem = procura_montagem(servico, caminho)
+        if funcao == 'Atualizar':
+            cursor_insercao.execute(f"select * from controle.{servico['tabela']} where id_gerado is not null")
+            metodo = 'PUT'
+        else:
+            cursor_insercao.execute(f"select * from controle.{servico['tabela']} where id_gerado is null")
+            metodo = 'POST'
+        while True:
+            linhas = cursor_insercao.fetchmany(50)
+            if not linhas:
+                break
+            
+            lote = montagem.montar(linhas, funcao)
+            sql = '''
+                INSERT INTO motor.controle_lotes(metodo, tipo_registro, lote_envio)
+                VALUES (?, ?, ?)
+            '''
+            params = (metodo, servico['tabela'], json.dumps(lote))
+            cursor_controle_lotes.execute(sql, params)
+            cursor_controle_lotes.execute("commit;")
+        cursor_insercao.close()
+        cursor_controle_lotes.close()
+    except Exception as e:
+        cursor_insercao.close()
+        cursor_controle_lotes.close()
+        print(f"Erro ao executar a inserção: {e}")
+        return False
+    return True
 
-
-def postar(url,lote,token,servico):
+def postar(url,lote,token,servico, metodo):
     headers = {
         "Authorization": "",
         "Content-Type": "application/json"
@@ -83,8 +115,10 @@ def postar(url,lote,token,servico):
     headers['Authorization']=f'Bearer {token}'
 
     try:
-        response = requests.post(url+servico, data=lote, headers=headers)
-        
+        if metodo == 'PUT':
+            response = requests.put(url+servico, data=lote, headers=headers)
+        else:
+            response = requests.post(url+servico, data=lote, headers=headers)
         retorno = response.json()
         id_lote = retorno.get('id') or retorno.get('idLote')
         if id_lote != None:
@@ -107,7 +141,7 @@ def postagem():
                     time.sleep(5)
                     break
                 for lote in lista:
-                    retorno, situacao = postar(url, lote.lote_envio, token, lote.tipo_registro)
+                    retorno, situacao = postar(url, lote.lote_envio, token, lote.tipo_registro, lote.metodo)
                     id_lote = retorno.get('id') or retorno.get('idLote')
                     sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_id = ?, lote_envio_retorno = ?  where id = ?'''
                     params = (situacao, id_lote, json.dumps(retorno), lote.id)
@@ -250,11 +284,10 @@ def colunas_sql(cursor, sql):
     cursor.execute(sql)
     linhas = cursor.fetchall()
     colunas = [desc[0] for desc in cursor.description]
-    placeholders = ', '.join(['?'] * len(colunas)) 
-    return placeholders, colunas, linhas
+    return colunas, linhas
 
 def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql=500):
-    placeholders, colunas, linhas = colunas_sql(cursor_extracao, sql)
+    colunas, linhas = colunas_sql(cursor_extracao, sql)
 
     colunas_update = [f"{col} = EXCLUDED.{col}" for col in colunas if col != 'id']
     on_conflict = ', '.join(colunas_update)
@@ -315,38 +348,10 @@ def iniciar_extracao(servico, caminho, funcao):
     return True
 
 def iniciar_envios(servico, caminho, funcao):
-    try:
-        cursor_insercao = criar_cursor('destino')
-        cursor_controle_lotes = criar_cursor('destino')
-        montagem = procura_montagem(servico, caminho)
-        
-        cursor_insercao.execute(f"select * from controle.{servico['tabela']} where id_gerado is null")
-        
-        while True:
-            linhas = cursor_insercao.fetchmany(50)
-            if not linhas:
-                break
-            
-            lote = montagem.montar(linhas, funcao)
-            sql = '''
-                INSERT INTO motor.controle_lotes(metodo, tipo_registro, lote_envio)
-                VALUES (?, ?, ?)
-            '''
-            params = ('POST', servico['tabela'], json.dumps(lote))
-            cursor_controle_lotes.execute(sql, params)
-            cursor_controle_lotes.execute("commit;")
-        cursor_insercao.close()
-        cursor_controle_lotes.close()
-    except Exception as e:
-        cursor_insercao.close()
-        cursor_controle_lotes.close()
-        print(f"Erro ao executar a inserção: {e}")
-        return False
-    return True
+    return envios(servico, caminho, funcao)
 
-def iniciar_atualizacao(cursor, servico, funcao):
-    print(servico, funcao)
-    return True
+def iniciar_atualizacao(servico, caminho, funcao):
+    return envios(servico, caminho, funcao)
 
 def iniciar_delete(cursor, servico, funcao):
     print(servico, funcao)

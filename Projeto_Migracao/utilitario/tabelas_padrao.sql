@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS parametros (
 
 
 CREATE OR REPLACE VIEW lotes_pendentes_envio AS
-SELECT id, tipo_registro, lote_envio
+SELECT id, metodo, tipo_registro, lote_envio
 FROM controle_lotes
 WHERE status_envio in ('NAO_ENVIADO') and lote_id is null;
 
