@@ -191,7 +191,7 @@ def abrir_parametros():
     frame = ttk.Frame(configurar_banco_janela, padding="5 5 5 5")
     frame.pack(side="left", fill="both", expand=True)
 
-    campos = ["Token"]
+    campos = ["Token","Url_Base","Url_Lote"]
     parametros = []
 
     configuracoes = carregar_dados_tabela('parametros')

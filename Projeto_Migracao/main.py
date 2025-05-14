@@ -76,15 +76,6 @@ def main():
         criar_botao_servico(frame_servico, 'Enviar', servico,  caminho, iniciar_envios)
         criar_botao_servico(frame_servico, 'Atualizar', servico, caminho, iniciar_atualizacao)
         criar_botao_servico(frame_servico, 'Deletar', servico,  caminho, iniciar_delete)
-
-
-    # Cria o frame de dados dentro da janela principal
-
-
-    # # Adiciona o campo "Lotes em Processamento"
-    # label_lotes = ttk.Label(janela, text="Lotes em Processamento: 0", font=("Helvetica", 10))
-    # label_lotes.pack(pady=10)
-    # atualizar_lotes(label_lotes)
     
     # frase no rodapé
     rodape = ttk.Label(janela, text="Projeto Migração de dados", font=("Helvetica", 10), anchor=CENTER)
