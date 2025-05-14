@@ -267,7 +267,6 @@ def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela):
     """
     cursor_envio.executemany(insert_sql, linhas)
     cursor_envio.execute("commit")
-    return True
 
 def procura_montagem(nome_arquivo, caminho):
     arquivo = caminho+f"\\{nome_arquivo['nome']}"
@@ -291,42 +290,48 @@ def listrar_arquivos(caminho, extensao):
 
 
 def iniciar_extracao(servico, caminho, funcao):
-    with open(caminho + '/' + 'SQL_Extracao' + '/' + servico["nome"] + '.sql', 'r', encoding='utf-8') as arquivo:
-        script = arquivo.read()
-        script_formatado = sqlparse.format(script, reindent=True, keyword_case='upper')
-    cursor_origem = criar_cursor('origem')
-    cursor_destino = criar_cursor('destino')
-    retorno = execute_sql_extracao(cursor_origem, cursor_destino, script_formatado, servico["tabela"])
-
+    try:
+        with open(caminho + '/' + 'SQL_Extracao' + '/' + servico["nome"] + '.sql', 'r', encoding='utf-8') as arquivo:
+            script = arquivo.read()
+            script_formatado = sqlparse.format(script, reindent=True, keyword_case='upper')
+        cursor_origem = criar_cursor('origem')
+        cursor_destino = criar_cursor('destino')
+        execute_sql_extracao(cursor_origem, cursor_destino, script_formatado, servico["tabela"])
+        cursor_origem.close()
+        cursor_destino.close()
+    except Exception as e:
+        print(f"Erro ao executar a extração: {e}")
+        return False
     return True
 
 def iniciar_envios(servico, caminho, funcao):
-    
-    inicio = time.time()
-    cursor_insercao = criar_cursor('destino')
-    cursor_controle_lotes = criar_cursor('destino')
-    montagem = procura_montagem(servico, caminho)
-
-    
-    cursor_insercao.execute(f"select * from controle.{servico['tabela']} where id_gerado is null")
-    
-    while True:
-        linhas = cursor_insercao.fetchmany(50)
-        if not linhas:
-            break
+    try:
+        cursor_insercao = criar_cursor('destino')
+        cursor_controle_lotes = criar_cursor('destino')
+        montagem = procura_montagem(servico, caminho)
         
-        lote = montagem.montar(linhas, funcao)
-        sql = '''
-            INSERT INTO motor.controle_lotes(metodo, tipo_registro, lote_envio)
-            VALUES (?, ?, ?)
-        '''
-        params = ('POST', servico['tabela'], json.dumps(lote))
-        cursor_controle_lotes.execute(sql, params)
-        cursor_controle_lotes.execute("commit;")
+        cursor_insercao.execute(f"select * from controle.{servico['tabela']} where id_gerado is null")
         
-    fim = time.time()
-    print(f"Tempo decorrido: {fim - inicio:.4f} segundos")
-
+        while True:
+            linhas = cursor_insercao.fetchmany(50)
+            if not linhas:
+                break
+            
+            lote = montagem.montar(linhas, funcao)
+            sql = '''
+                INSERT INTO motor.controle_lotes(metodo, tipo_registro, lote_envio)
+                VALUES (?, ?, ?)
+            '''
+            params = ('POST', servico['tabela'], json.dumps(lote))
+            cursor_controle_lotes.execute(sql, params)
+            cursor_controle_lotes.execute("commit;")
+        cursor_insercao.close()
+        cursor_controle_lotes.close()
+    except Exception as e:
+        cursor_insercao.close()
+        cursor_controle_lotes.close()
+        print(f"Erro ao executar a inserção: {e}")
+        return False
     return True
 
 def iniciar_atualizacao(cursor, servico, funcao):
