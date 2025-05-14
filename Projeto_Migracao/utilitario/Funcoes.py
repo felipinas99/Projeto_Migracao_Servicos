@@ -1,5 +1,4 @@
-import json, math, requests, pyodbc, concurrent.futures, os, time, sys, importlib, sqlparse
-from rapidfuzz import fuzz
+import json, requests, pyodbc, os, time, importlib, sqlparse
 
 def iniciarCursorSybase(dsn, usuario, senha, app="APP=BTLS=V2Y7Uq9RxaIfCU87u8ugNIW+/03ctxUc6nfxu9n2Qu9omwxmbQccTa3e2zujHW+PFBkBuXBQPnwIDpKrTdNusi811gsL3cvJ/vOOYqOAA5rqDBz4AElLxstkQXonzuc9twe54bkelHF2DpZj4B8M6NmHM4v2RO6PCuRH/fTqFAA=", driver ="SQL Anywhere 16"):
     
@@ -245,16 +244,16 @@ def atualiza_retorno_lote_itens():
                     if not retorno:
                         continue
                     for item in retorno:
-                        if item['idGerado'] == None:
+                        mensagem =  str(item.get("situacao")) + ' / '  + str(item.get("mensagem"))
+                        if item.get("idGerado") == None:
                             sql = f'''UPDATE controle.{lote.tipo_registro} set mensagem = ? where id = ?'''
-                            params = (item['mensagem'], item['idIntegracao'])
-                            cursor_atualiza.execute(sql, params) 
-                            cursor_atualiza.execute("commit")
-                            continue
-                        sql = f'''UPDATE controle.{lote.tipo_registro} set id_gerado = ? where id = ?'''
-                        params = (item['idGerado'], item['idIntegracao'])
-                        cursor_atualiza.execute(sql, params)
+                            params = (mensagem, item['idIntegracao'])
+                        else:
+                            sql = f'''UPDATE controle.{lote.tipo_registro} set id_gerado = ? , mensagem = ? where id = ?'''
+                            params = (item['idGerado'], mensagem ,item['idIntegracao'])
+                        cursor_atualiza.execute(sql, params) 
                         cursor_atualiza.execute("commit")
+
                     sql = f'''UPDATE motor.controle_lotes set ids_atualizados = true where id = ?'''
                     params = (lote.id)
                     cursor_atualiza.execute(sql, params)
