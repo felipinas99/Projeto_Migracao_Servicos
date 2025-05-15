@@ -1,0 +1,12 @@
+psycopg2
+psycopg2_binary
+pyodbc
+Requests
+sqlparse
+ttkbootstrap
+threading
+os
+sys
+json
+time
+importlib
