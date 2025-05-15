@@ -1,8 +1,7 @@
-import ttkbootstrap as ttk  # Certifique-se de usar ttkbootstrap
-from ttkbootstrap.constants import *
-from ttkbootstrap.dialogs import *
-from ttkbootstrap.tableview import *
-import random
+import ttkbootstrap as ttk 
+from ttkbootstrap.constants import TRUE, LEFT
+from ttkbootstrap.dialogs import Messagebox
+from ttkbootstrap.tableview import Tableview
 import os, json, psycopg2
 import threading
 
@@ -33,34 +32,7 @@ def cria_janela(titulo):
     janela.state('zoomed')  # Maximiza a janela
     return janela
 
-def obter_dados():
-    # Função que retorna uma lista de dados com 4 colunas
-    return [[random.randint(1, 100) for _ in range(4)] for _ in range(100)]
 
-# def atualizar_tabela_treeview(treeview):
-#     for item in treeview.get_children():
-#         treeview.delete(item)
-#     dados = obter_dados()[:100]  # Limita a 100 itens
-#     for linha in dados:
-#         treeview.insert("", "end", values=linha)
-#     treeview.after(2000, atualizar_tabela, treeview)  # Atualiza a cada 2 segundos
-
-# def criar_frame_dados_treeview(janela):
-#     frame_dados = ttk.Frame(janela, padding="10 10 10 10")
-#     frame_dados.pack(side="right", fill="both", expand=True)
-
-#     colunas = ("Coluna1", "Coluna2", "Coluna3", "Coluna4")
-#     treeview = ttk.Treeview(frame_dados, columns=colunas, show="headings")
-#     for col in colunas:
-#         treeview.heading(col, text=col)
-#         treeview.column(col, width=100)
-#     treeview.pack(side="left", fill="both", expand=True)
-
-#     scrollbar = ttk.Scrollbar(frame_dados, orient="vertical", command=treeview.yview)
-#     treeview.configure(yscrollcommand=scrollbar.set)
-#     scrollbar.pack(side="right", fill="y")
-
-#     atualizar_tabela_treeview(treeview)
 
 def cria_frame_tabela():
     configurar_banco_janela = ttk.Toplevel()  # Usando ttkbootstrap para criar a janela
@@ -91,12 +63,6 @@ def cria_frame_tabela():
     )
     tabela.pack( fill="both", expand=True)
 
-
-def atualizar_lotes(label):
-    # Função que simula a atualização dos lotes em processamento
-    lotes = random.randint(1, 50)
-    label.config(text=f"Lotes em Processamento: {lotes}")
-    label.after(2000, atualizar_lotes, label)  # Atualiza a cada 2 segundos
 
 def salvar_configuracao(campos,campos_origem, campos_destino):
     config = {
@@ -191,7 +157,7 @@ def abrir_parametros():
     frame = ttk.Frame(configurar_banco_janela, padding="5 5 5 5")
     frame.pack(side="left", fill="both", expand=True)
 
-    campos = ["Token","Url_Base","Url_Lote"]
+    campos = ["Token","Sistema","Concorrente","Url_Base","Url_Lote"]
     parametros = []
 
     configuracoes = carregar_dados_tabela('parametros')

@@ -285,7 +285,7 @@ def colunas_sql(cursor, sql):
     colunas = [desc[0] for desc in cursor.description]
     return colunas, linhas
 
-def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql=500):
+def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql=1000):
     colunas, linhas = colunas_sql(cursor_extracao, sql)
 
     colunas_update = [f"{col} = EXCLUDED.{col}" for col in colunas if col != 'id']
