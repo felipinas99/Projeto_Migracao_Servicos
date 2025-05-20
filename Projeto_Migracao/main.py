@@ -2,20 +2,27 @@ import threading
 from ttkbootstrap.constants import BOTTOM, CENTER, LEFT, X
 import ttkbootstrap as ttk ,os, sys
 from Funcoes_app import criar_rotulo, criar_botao_servico, cria_frame_tabela, abrir_configurar_banco, abrir_parametros
-from utilitario.Funcoes import ler_pasta_config_json, ler_servicos_json, iniciar_delete, iniciar_atualizacao, iniciar_envios, iniciar_extracao, postagem, get_lotes, atualiza_retorno_lote_itens
+from utilitario.Funcoes import busca_parametro, ler_pasta_config_json, ler_servicos_json, iniciar_delete, iniciar_atualizacao, iniciar_envios, iniciar_extracao, postagem, get_lotes, atualiza_retorno_lote_itens
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if base_dir not in sys.path:
     sys.path.append(base_dir)
 
 
+
 threading.Thread(target=postagem).start()
 threading.Thread(target=get_lotes).start()
 threading.Thread(target=atualiza_retorno_lote_itens).start()
 
-caminho = 'Servicos_Padrao'
-pasta_config = ler_pasta_config_json(caminho)
-servicos = ler_servicos_json(pasta_config)
+
+try:
+    servicos  = []
+    sistema = busca_parametro('Sistema')
+    caminho = f'Projeto_Migracao\\{sistema}'
+    pasta_config = ler_pasta_config_json(caminho)
+    servicos = ler_servicos_json(pasta_config)
+except Exception as e:
+    print(f"Erro ao ler o arquivo de configuração: {e}")
 
 def main():
     # Cria a janela principal com um tema moderno
@@ -62,7 +69,6 @@ def main():
     canvas.configure(yscrollcommand=scrollbar.set)
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
-
 
     # Lista os servicos do config.json e cria os botões atribuindo suas funcoes
     for servico in servicos:

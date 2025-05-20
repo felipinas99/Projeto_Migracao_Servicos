@@ -1,0 +1,22 @@
+{
+    "origem": {
+        "DRIVER": "Postgres Unicode",
+        "UID": "postgres",
+        "PWD": "admin",
+        "DATABASE": "Migracao",
+        "SERVER": "localhost",
+        "PORT": "5432",
+        "DSN": "",
+        "APP": ""
+    },
+    "destino": {
+        "DRIVER": "Postgres Unicode",
+        "UID": "postgres",
+        "PWD": "admin",
+        "DATABASE": "Migracao",
+        "SERVER": "localhost",
+        "PORT": "5432",
+        "DSN": "",
+        "APP": ""
+    }
+}

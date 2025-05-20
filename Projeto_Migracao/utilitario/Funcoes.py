@@ -1,5 +1,22 @@
 import json, requests, pyodbc, os, time, importlib, sqlparse
 
+def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver=""):
+    conn_str = (
+        f'DRIVER={driver};'
+        f'UID={usuario};'
+        f'PWD={senha};'
+        f'Database={banco_dados};'
+        f'Server={host};'
+        f'Port={porta};'
+        f'ClientEncoding=UTF8;'  # Força a codificação UTF-8
+    )
+    try:
+        pyodbc.setDecimalSeparator(".")
+        conn = pyodbc.connect(conn_str)
+        return conn.cursor()
+    except Exception as e:
+        print(f"Erro ao conectar ao banco de dados: {e}")
+
 def iniciarCursorSybase(dsn, usuario, senha, app="APP=BTLS=V2Y7Uq9RxaIfCU87u8ugNIW+/03ctxUc6nfxu9n2Qu9omwxmbQccTa3e2zujHW+PFBkBuXBQPnwIDpKrTdNusi811gsL3cvJ/vOOYqOAA5rqDBz4AElLxstkQXonzuc9twe54bkelHF2DpZj4B8M6NmHM4v2RO6PCuRH/fTqFAA=", driver ="SQL Anywhere 16"):
     
     stringCon = 'DRIVER=' + driver + ';SERVER=' + dsn  + ';DSN=' + dsn + ';Uid=' + usuario + ';Pwd=' + senha + ';Encrypt=yes;Connection Timeout=30;APP='+ app +';'
@@ -76,7 +93,7 @@ def envios(servico, caminho, funcao):
         metodo = ''
         cursor_insercao = criar_cursor('destino')
         cursor_controle_lotes = criar_cursor('destino')
-        montagem = procura_montagem(servico, caminho)
+        montagem = procura_montagem(servico)
         if funcao == 'Atualizar':
             cursor_insercao.execute(f"select * from controle.{servico['tabela']} where id_gerado is not null")
             metodo = 'PUT'
@@ -227,7 +244,6 @@ def get_lotes():
         time.sleep(5)
         return False
     
-
 def atualiza_retorno_lote_itens():
     try:
         while True:
@@ -268,7 +284,7 @@ def atualiza_retorno_lote_itens():
         return False
 
 def criar_cursor(opcao):
-    with open("config_banco.json", "r") as f:
+    with open("Projeto_Migracao/config_banco.json", "r") as f:
         config = json.load(f)
     conf = config[opcao]
     cursor = iniciarCursorPostgresql(banco_dados=conf["DATABASE"],
@@ -310,14 +326,15 @@ def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql
 
     cursor_envio.execute("commit")
 
-def procura_montagem(nome_arquivo, caminho):
-    arquivo = caminho+f"\\{nome_arquivo['nome']}"
-    modulo = importlib.import_module(arquivo.replace("\\", "."))
-    modulo_nome = f"{caminho}.{nome_arquivo['nome']}".replace("\\", ".").replace("/", ".")
+def procura_montagem(nome_arquivo):
+    sistema = busca_parametro('Sistema')
+    arquivo = os.path.join("Projeto_Migracao",sistema,"Json_envio",f"{nome_arquivo['nome']}")
+    modulo_nome = arquivo.replace("\\", ".").replace("/", ".")
     modulo = importlib.import_module(modulo_nome)
     return modulo
 
 def ler_pasta_config_json(caminho):
+    print(os.path.abspath(os.path.dirname(__file__)))
     with open(caminho + '/' + 'config.json', 'r') as file:
         config = json.load(file)
     return config
@@ -331,19 +348,24 @@ def listrar_arquivos(caminho, extensao):
     return arquivos
 
 
-def iniciar_extracao(servico, caminho, funcao):
+def iniciar_extracao(**kwargs):
+    servico = kwargs.get("servico")
     try:
-        with open(caminho + '/' + 'SQL_Extracao' + '/' + servico["nome"] + '.sql', 'r', encoding='utf-8') as arquivo:
+        sistema = busca_parametro('Sistema')
+        concorrente = busca_parametro('Concorrente')
+        arquivo = os.path.join("Projeto_Migracao",sistema,"Concorrente_Extracao",concorrente,f"{servico['nome']}.sql")
+        with open(arquivo, 'r', encoding='utf-8') as arquivo:
             script = arquivo.read()
             script_formatado = sqlparse.format(script, reindent=True, keyword_case='upper')
         cursor_origem = criar_cursor('origem')
         cursor_destino = criar_cursor('destino')
         execute_sql_extracao(cursor_origem, cursor_destino, script_formatado, servico["tabela"])
-        cursor_origem.close()
-        cursor_destino.close()
     except Exception as e:
         print(f"Erro ao executar a extração: {e}")
         return False
+    finally:
+        cursor_origem.close()
+        cursor_destino.close()
     return True
 
 def iniciar_envios(servico, caminho, funcao):
