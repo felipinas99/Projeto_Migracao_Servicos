@@ -2,12 +2,12 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import TRUE, LEFT
 from ttkbootstrap.dialogs import Messagebox
 from ttkbootstrap.tableview import Tableview
-import os, json, psycopg2
+import os, json
 import threading
 
 from utilitario.Funcoes import criar_cursor
 
-config_file = "config_banco.json"
+config_file = "Projeto_Migracao/config_banco.json"
 
 def criar_rotulo(janela, texto, tamanho=14):
     rotulo = ttk.Label(janela, text=texto, font=("Helvetica", tamanho))
@@ -69,34 +69,6 @@ def salvar_configuracao(campos,campos_origem, campos_destino):
         "origem": {campo: campos_origem[i].get() for i, campo in enumerate(campos)},
         "destino": {campo: campos_destino[i].get() for i, campo in enumerate(campos)}
     }
-
-    for tipo in ["destino"]:
-        conf = config[tipo]
-        try:
-            # Tenta conectar ao banco informado
-            conn = psycopg2.connect(
-                dbname="postgres",  # Conecta ao banco padrão para criar outro
-                user=conf["UID"],
-                password=conf["PWD"],
-                host=conf["SERVER"],
-                port=conf["PORT"]
-            )
-            conn.autocommit = True
-            cur = conn.cursor()
-
-            # Verifica se o banco já existe
-            cur.execute(f"SELECT 1 FROM pg_database WHERE datname = %s", (conf["DATABASE"],))
-            exists = cur.fetchone()
-            if not exists:
-                cur.execute(f'CREATE DATABASE "{conf["DATABASE"]}"')
-                print(f'Banco "{conf["DATABASE"]}" criado para {tipo}.')
-            else:
-                print(f'Banco "{conf["DATABASE"]}" já existe para {tipo}.')
-
-            cur.close()
-            conn.close()
-        except Exception as e:
-            print(f"Erro ao validar/criar banco {tipo}: {e}")
 
     with open(config_file, "w") as f:
         json.dump(config, f, indent=4)

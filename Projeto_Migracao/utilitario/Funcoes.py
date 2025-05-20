@@ -1,6 +1,6 @@
 import json, requests, pyodbc, os, time, importlib, sqlparse
 
-def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver=""):
+def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
     conn_str = (
         f'DRIVER={driver};'
         f'UID={usuario};'
@@ -94,11 +94,17 @@ def envios(servico, caminho, funcao):
         cursor_insercao = criar_cursor('destino')
         cursor_controle_lotes = criar_cursor('destino')
         montagem = procura_montagem(servico)
+        sistema = busca_parametro('Sistema')
+        arquivo = os.path.join("Projeto_Migracao",sistema,"Sql_Envio",f"{servico['nome']}.sql")
+        with open(arquivo, 'r', encoding='utf-8') as arquivo:
+            script = arquivo.read()
+            script_formatado = sqlparse.format(script, reindent=True, keyword_case='upper')
+
         if funcao == 'Atualizar':
-            cursor_insercao.execute(f"select * from controle.{servico['tabela']} where id_gerado is not null")
+            cursor_insercao.execute({script_formatado} + "not")
             metodo = 'PUT'
         else:
-            cursor_insercao.execute(f"select * from controle.{servico['tabela']} where id_gerado is null")
+            cursor_insercao.execute(script_formatado)
             metodo = 'POST'
         while True:
             linhas = cursor_insercao.fetchmany(50)
@@ -287,11 +293,12 @@ def criar_cursor(opcao):
     with open("Projeto_Migracao/config_banco.json", "r") as f:
         config = json.load(f)
     conf = config[opcao]
-    cursor = iniciarCursorPostgresql(banco_dados=conf["DATABASE"],
+    cursor = iniciarCursorGeneric(banco_dados=conf["DATABASE"],
                             host=conf["SERVER"],
                             porta=conf["PORT"],
                             usuario=conf["UID"],
-                            senha=conf["PWD"])
+                            senha=conf["PWD"],
+                            driver=conf["DRIVER"])
     return cursor
 
 def colunas_sql(cursor, sql):

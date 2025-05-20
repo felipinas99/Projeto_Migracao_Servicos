@@ -1,6 +1,6 @@
 {
     "origem": {
-        "DRIVER": "Postgres Unicode",
+        "DRIVER": "PostgreSQL Unicode",
         "UID": "postgres",
         "PWD": "admin",
         "DATABASE": "Migracao",
@@ -10,7 +10,7 @@
         "APP": ""
     },
     "destino": {
-        "DRIVER": "Postgres Unicode",
+        "DRIVER": "PostgreSQL Unicode",
         "UID": "postgres",
         "PWD": "admin",
         "DATABASE": "Migracao",
