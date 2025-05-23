@@ -8,7 +8,7 @@ def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
         f'Database={banco_dados};'
         f'Server={host};'
         f'Port={porta};'
-        f'ClientEncoding=UTF8;'  # Força a codificação UTF-8
+        f'ClientEncoding=UTF8;'
     )
     try:
         pyodbc.setDecimalSeparator(".")
@@ -35,23 +35,6 @@ def iniciarCursorSybase(dsn, usuario, senha, app="APP=BTLS=V2Y7Uq9RxaIfCU87u8ugN
     cursor = conn.cursor()
 
     return cursor
-
-def iniciarCursorPostgresql(host, banco_dados, porta, usuario, senha, driver="PostgreSQL UNICODE"):
-    conn_str = (
-        f'DRIVER={driver};'
-        f'UID={usuario};'
-        f'PWD={senha};'
-        f'Database={banco_dados};'
-        f'Server={host};'
-        f'Port={porta};'
-        f'ClientEncoding=UTF8;'  # Força a codificação UTF-8
-    )
-    try:
-        pyodbc.setDecimalSeparator(".")
-        conn = pyodbc.connect(conn_str)
-        return conn.cursor()
-    except Exception as e:
-        print(f"Erro ao conectar ao banco de dados: {e}")
         
 def iniciarCursorSQLServer(host, banco_dados, usuario, senha, driver="ODBC Driver 17 for SQL Server"):
     conn_str = ( 
@@ -88,12 +71,12 @@ def busca_parametro(parametro):
     cursor.close()
     return valor
 
-def envios(servico, caminho, funcao):
+def envios(servico, funcao):
     try:
         metodo = ''
         cursor_insercao = criar_cursor('destino')
         cursor_controle_lotes = criar_cursor('destino')
-        montagem = procura_montagem(servico)
+        montagem = procura_montagem(servico,'Json_envio')
         sistema = busca_parametro('Sistema')
         arquivo = os.path.join("Projeto_Migracao",sistema,"Sql_Envio",f"{servico['nome']}.sql")
         with open(arquivo, 'r', encoding='utf-8') as arquivo:
@@ -194,13 +177,13 @@ def get_lote(url, lote_id, token):
         )
         resultado = response.json()
 
-        situacao = resultado.get('situacao')
+        situacao = resultado.get('situacao') or resultado.get('statusLote')
         match situacao:
             case 'EXECUTANDO':
                 return resultado, 'PROCESSANDO'
             case 'ERRO' | 'ERROR':
                 return resultado, 'ERRO'
-            case 'EXECUTADO' | 'PROCESSADO' | 'EXECUTADO_OK':
+            case 'EXECUTADO' | 'PROCESSADO' | 'EXECUTADO_OK'| 'EXECUTADO_PARCIALMENTE_OK':
                 return resultado, 'PROCESSADO'
             case 'AGUARDANDO_EXECUCAO':
                 return resultado, 'AGUARDANDO_EXECUCAO'
@@ -255,6 +238,7 @@ def atualiza_retorno_lote_itens():
         while True:
             cursor = criar_cursor('destino')
             cursor_atualiza = criar_cursor('destino')
+            sistema = busca_parametro('Sistema')
             cursor.execute('select * from motor.lotes_pendentes_resgate lpp')
             while True:
                 lista = cursor.fetchmany(50)
@@ -267,12 +251,13 @@ def atualiza_retorno_lote_itens():
                         continue
                     for item in retorno:
                         mensagem =  str(item.get("situacao")) + ' / '  + str(item.get("mensagem"))
-                        if item.get("idGerado") == None:
-                            sql = f'''UPDATE controle.{lote.tipo_registro} set mensagem = ? where id = ?'''
+                        idGerado = item.get('idGerado', {}).get('id') or  item.get("idGerado") 
+                        if idGerado == None:
+                            sql = f'''UPDATE "{sistema}".{lote.tipo_registro} set mensagem = ? where id = ?'''
                             params = (mensagem, item['idIntegracao'])
                         else:
-                            sql = f'''UPDATE controle.{lote.tipo_registro} set id_gerado = ? , mensagem = ? where id = ?'''
-                            params = (item['idGerado'], mensagem ,item['idIntegracao'])
+                            sql = f'''UPDATE "{sistema}".{lote.tipo_registro} set id_gerado = ? , mensagem = ? where id = ?'''
+                            params = (idGerado, mensagem ,item['idIntegracao'])
                         cursor_atualiza.execute(sql, params) 
                         cursor_atualiza.execute("commit")
 
@@ -309,6 +294,8 @@ def colunas_sql(cursor, sql):
     return colunas, linhas
 
 def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql=1000):
+    sistema = busca_parametro('Sistema')
+
     colunas, linhas = colunas_sql(cursor_extracao, sql)
 
     colunas_update = [f"{col} = EXCLUDED.{col}" for col in colunas if col != 'id']
@@ -324,7 +311,7 @@ def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql
         flat_values = [valor for linha in batch for valor in linha]  
 
         insert_sql = f"""
-        INSERT INTO controle.{tabela} ({colunas_sql_str})
+        INSERT INTO "{sistema}".{tabela} ({colunas_sql_str})
         VALUES {all_placeholders}
         ON CONFLICT (id) DO UPDATE SET {on_conflict}
         """
@@ -333,9 +320,9 @@ def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql
 
     cursor_envio.execute("commit")
 
-def procura_montagem(nome_arquivo):
+def procura_montagem(nome_arquivo, pasta):
     sistema = busca_parametro('Sistema')
-    arquivo = os.path.join("Projeto_Migracao",sistema,"Json_envio",f"{nome_arquivo['nome']}")
+    arquivo = os.path.join("Projeto_Migracao",sistema,pasta,f"{nome_arquivo['nome']}")
     modulo_nome = arquivo.replace("\\", ".").replace("/", ".")
     modulo = importlib.import_module(modulo_nome)
     return modulo
@@ -349,11 +336,66 @@ def ler_pasta_config_json(caminho):
 def ler_servicos_json(config):
     return [{"nome": item["nome"], "tabela": item["tabela"]} for item in config["servicos"]]
 
+def get_unitario(url, headers):
+
+    response = requests.get(headers=headers, url=url)
+    if response.status_code == 200:
+        result = response.json()
+        if result == []:
+            result, False
+        return result, True
+
+def busca_todos_registros_cloud(servico):
+    headers = {
+        "Authorization": "",
+        "Content-Type": "application/json"
+    }
+    try:
+        continuar = True
+        url = busca_parametro('Url_Base')
+        token = busca_parametro('Token')
+        headers['Authorization'] = f'Bearer {token}'
+        limit = 99
+        offset = 0
+        tipo = 2
+        url_final = url + '/' + servico["nome"]
+        match tipo:
+            case 1:
+                url_final += "?limit={limit}&offset={offset}"
+            case 2:
+                offset = 1
+                url_final += "?nRegistros={limit}&iniciaEm={offset}"
+
+        while continuar:
+            url_pagina = url_final.format(limit=limit, offset=offset)
+            retorno, continuar = get_unitario(url_pagina, headers)
+            if not retorno:
+                break
+            yield retorno 
+            offset += limit
+    except Exception as e:
+        print(f"Erro na busca_todos_registros_cloud: {e}")
+        return
+
+
+def resgate(servico):
+    try:
+        cursor_resgate = criar_cursor('destino')
+        montagem = procura_montagem(servico,'resgate')
+        for lote in busca_todos_registros_cloud(servico):
+            montagem.atualiza_registro_lote(lote,cursor_resgate)
+            cursor_resgate.commit()
+
+        return True
+    except Exception as e:
+        print(f"Erro ao executar a resgate: {e}")
+        return False
+    finally:
+        cursor_resgate.close()
 
 def listrar_arquivos(caminho, extensao):
     arquivos = [arquivo for arquivo in os.listdir(caminho) if arquivo.endswith('.'+extensao)]
     return arquivos
-
 
 def iniciar_extracao(**kwargs):
     servico = kwargs.get("servico")
@@ -375,11 +417,15 @@ def iniciar_extracao(**kwargs):
         cursor_destino.close()
     return True
 
-def iniciar_envios(servico, caminho, funcao):
-    return envios(servico, caminho, funcao)
+def iniciar_envios(servico, funcao):
+    return envios(servico, funcao)
 
-def iniciar_atualizacao(servico, caminho, funcao):
-    return envios(servico, caminho, funcao)
+def iniciar_resgate(**kwargs):
+    servico = kwargs.get("servico")
+    return resgate(servico)
+
+def iniciar_atualizacao(servico, funcao):
+    return envios(servico, funcao)
 
 def iniciar_delete(cursor, servico, funcao):
     print(servico, funcao)

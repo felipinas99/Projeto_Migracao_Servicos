@@ -1,5 +1,4 @@
 CREATE SCHEMA IF NOT EXISTS motor;
-CREATE SCHEMA IF NOT EXISTS controle;
 SET search_path TO motor;
 CREATE EXTENSION IF NOT EXISTS unaccent;
 
