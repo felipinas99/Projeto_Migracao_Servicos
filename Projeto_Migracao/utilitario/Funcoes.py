@@ -96,10 +96,10 @@ def envios(servico, funcao):
             
             lote = montagem.montar(linhas, funcao)
             sql = '''
-                INSERT INTO motor.controle_lotes(metodo, tipo_registro, lote_envio)
-                VALUES (?, ?, ?)
+                INSERT INTO motor.controle_lotes(metodo, tipo_registro, servico, lote_envio)
+                VALUES (?, ?, ?, ?)
             '''
-            params = (metodo, servico['tabela'], json.dumps(lote))
+            params = (metodo, servico['tabela'],servico['servico'], json.dumps(lote))
             cursor_controle_lotes.execute(sql, params)
             cursor_controle_lotes.execute("commit;")
         cursor_insercao.close()
@@ -146,7 +146,7 @@ def postagem():
                     time.sleep(5)
                     break
                 for lote in lista:
-                    retorno, situacao = postar(url, lote.lote_envio, token, lote.tipo_registro, lote.metodo)
+                    retorno, situacao = postar(url, lote.lote_envio, token, lote.servico, lote.metodo)
                     id_lote = retorno.get('id') or retorno.get('idLote')
                     sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_id = ?, lote_envio_retorno = ?  where id = ?'''
                     params = (situacao, id_lote, json.dumps(retorno), lote.id)
@@ -334,7 +334,7 @@ def ler_pasta_config_json(caminho):
     return config
 
 def ler_servicos_json(config):
-    return [{"nome": item["nome"], "tabela": item["tabela"]} for item in config["servicos"]]
+    return [{"nome": item["nome"], "tabela": item["tabela"], "servico": item["servico"]} for item in config["servicos"]]
 
 def get_unitario(url, headers):
 
@@ -358,7 +358,7 @@ def busca_todos_registros_cloud(servico):
         limit = 99
         offset = 0
         tipo = 2
-        url_final = url + '/' + servico["nome"]
+        url_final = url + '/' + servico["servico"]
         match tipo:
             case 1:
                 url_final += "?limit={limit}&offset={offset}"
