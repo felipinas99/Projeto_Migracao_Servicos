@@ -1,9 +1,9 @@
 {
     "servicos": [
         {
-            "nome": "pessoa",
-            "tabela": "pessoa",
-            "url": "url"
+            "nome": "municipios",
+            "servico": "municipios",
+            "tabela": "municipios"
         }
     ]
 }

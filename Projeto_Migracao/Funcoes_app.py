@@ -170,9 +170,9 @@ def criar_botao_servico(frame, funcao, servico, caminho, acao):
     botao = ttk.Button(
         frame,
         text=funcao,
-        command=lambda: acao_com_cor(botao, servico=servico, funcao=funcao, caminho = caminho, acao=acao)
+        command=lambda: acao_com_cor(botao, servico=servico, funcao=funcao, caminho=caminho, acao=acao)
     )
-    botao.pack(side=LEFT, padx=5)
+    botao.pack(side="left", padx=5, pady=2)
 
 
 def acao_com_cor(botao, **kwargs):

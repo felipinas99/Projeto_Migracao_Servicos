@@ -18,6 +18,7 @@ END $$;
 CREATE TABLE if not exists controle_lotes (
     id SERIAL PRIMARY KEY,  
     tipo_registro VARCHAR,  
+    servico VARCHAR,  
     metodo metodo,
     lote_envio JSONB,
     status_envio status_lote_envio,
@@ -36,7 +37,7 @@ CREATE TABLE IF NOT EXISTS parametros (
 
 
 CREATE OR REPLACE VIEW lotes_pendentes_envio AS
-SELECT id, metodo, tipo_registro, lote_envio
+SELECT id, metodo, tipo_registro, servico, lote_envio
 FROM controle_lotes
 WHERE status_envio in ('NAO_ENVIADO') and lote_id is null;
 

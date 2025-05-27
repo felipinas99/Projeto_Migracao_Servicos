@@ -1,0 +1,9 @@
+{
+    "servicos": [
+        {
+            "nome": "pessoa",
+            "tabela": "pessoa",
+            "url": "https://api.protocolo.betha.cloud/protocolo/service-layer/v1/api/pessoa"
+        }
+    ]
+}

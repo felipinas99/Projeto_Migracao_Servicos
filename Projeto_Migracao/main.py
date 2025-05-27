@@ -56,7 +56,7 @@ def main():
     # Frame dos servicos
     frame_servicos = ttk.Frame(janela)
     frame_servicos.pack(side=LEFT, fill='y', expand=False, padx=0, pady=10, ipadx=10, ipady=0)
-    canvas = ttk.Canvas(frame_servicos)
+    canvas = ttk.Canvas(frame_servicos, width=550)
     scrollbar = ttk.Scrollbar(frame_servicos, orient="vertical", command=canvas.yview)
     scrollable_frame = ttk.Frame(canvas)
     scrollable_frame.bind(
@@ -72,17 +72,22 @@ def main():
 
     # Lista os servicos do config.json e cria os botões atribuindo suas funcoes
     for servico in servicos:
-        frame_servico = ttk.Frame(scrollable_frame, padding="10 15 0 0")
+        frame_servico = ttk.Frame(scrollable_frame, padding="10 20 0 0")
         frame_servico.pack(pady=0, padx=0, fill=X)
 
         label_servico = ttk.Label(frame_servico, text=servico["nome"], font=("Helvetica", 10))
-        label_servico.pack(side=LEFT, padx=0)
+        label_servico.pack(anchor="w", pady=(0, 2))  # Alinha à esquerda
 
-        criar_botao_servico(frame_servico, 'Extrair', servico, caminho, iniciar_extracao)
-        criar_botao_servico(frame_servico, 'Resgate', servico, caminho, iniciar_resgate)
-        criar_botao_servico(frame_servico, 'Enviar', servico,  caminho, iniciar_envios)
-        criar_botao_servico(frame_servico, 'Atualizar', servico, caminho, iniciar_atualizacao)
-        criar_botao_servico(frame_servico, 'Deletar', servico,  caminho, iniciar_delete)
+        # Crie um frame só para os botões, para alinhar verticalmente
+        frame_botoes = ttk.Frame(frame_servico)
+        frame_botoes.pack(anchor="w", fill="x")
+
+        # Cada botão em uma linha
+        criar_botao_servico(frame_botoes, 'Extrair', servico, caminho, iniciar_extracao)
+        criar_botao_servico(frame_botoes, 'Resgate', servico, caminho, iniciar_resgate)
+        criar_botao_servico(frame_botoes, 'Enviar', servico, caminho, iniciar_envios)
+        criar_botao_servico(frame_botoes, 'Atualizar', servico, caminho, iniciar_atualizacao)
+        criar_botao_servico(frame_botoes, 'Deletar', servico, caminho, iniciar_delete)
     
     # frase no rodapé
     rodape = ttk.Label(janela, text="Projeto Migração de dados", font=("Helvetica", 10), anchor=CENTER)
