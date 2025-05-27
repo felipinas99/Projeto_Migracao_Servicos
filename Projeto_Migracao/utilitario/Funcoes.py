@@ -293,7 +293,7 @@ def colunas_sql(cursor, sql):
     colunas = [desc[0] for desc in cursor.description]
     return colunas, linhas
 
-def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql=1000):
+def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql=500):
     sistema = busca_parametro('Sistema')
 
     colunas, linhas = colunas_sql(cursor_extracao, sql)
@@ -417,16 +417,22 @@ def iniciar_extracao(**kwargs):
         cursor_destino.close()
     return True
 
-def iniciar_envios(servico, funcao):
+def iniciar_envios(**kwargs):
+    servico = kwargs.get("servico")
+    funcao = kwargs.get("funcao")
     return envios(servico, funcao)
 
 def iniciar_resgate(**kwargs):
     servico = kwargs.get("servico")
     return resgate(servico)
 
-def iniciar_atualizacao(servico, funcao):
+def iniciar_atualizacao(**kwargs):
+    servico = kwargs.get("servico")
+    funcao = kwargs.get("funcao")
     return envios(servico, funcao)
 
-def iniciar_delete(cursor, servico, funcao):
+def iniciar_delete(**kwargs):
+    servico = kwargs.get("servico")
+    funcao = kwargs.get("funcao")
     print(servico, funcao)
     return True
