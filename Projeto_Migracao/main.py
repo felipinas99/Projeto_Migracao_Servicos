@@ -1,7 +1,7 @@
 import threading
 from ttkbootstrap.constants import BOTTOM, CENTER, LEFT, X
 import ttkbootstrap as ttk ,os, sys
-from Funcoes_app import criar_rotulo, criar_botao_servico, cria_frame_tabela, abrir_configurar_banco, abrir_parametros
+from Funcoes_app import abrir_deletar_registros, criar_rotulo, criar_botao_servico, cria_frame_tabela, abrir_configurar_banco, abrir_parametros
 from utilitario.Funcoes import busca_parametro, iniciar_resgate, ler_pasta_config_json, ler_servicos_json, iniciar_delete, iniciar_atualizacao, iniciar_envios, iniciar_extracao, postagem, get_lotes, atualiza_retorno_lote_itens
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -44,6 +44,8 @@ def main():
     file_menu_config.add_command(label="Bancos", command=abrir_configurar_banco)
     file_menu_config.add_separator()
     file_menu_config.add_command(label="Parâmetros", command=abrir_parametros)
+    file_menu_config.add_separator()
+    file_menu_config.add_command(label="Deletar Registro", command=abrir_deletar_registros)
     file_menu_config.add_separator()
     file_menu_config.add_command(label="Sair", command=janela.quit)
 

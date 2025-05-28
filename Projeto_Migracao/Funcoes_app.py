@@ -165,6 +165,17 @@ def abrir_parametros():
     botao_salvar = ttk.Button(configurar_banco_janela, text="Salvar", command=salvar_parametros)
     botao_salvar.pack(pady=10)
 
+def abrir_deletar_registros():
+    configurar_banco_janela = ttk.Toplevel()
+    configurar_banco_janela.title("Deletar Registros")
+    configurar_banco_janela.geometry("900x700+0+0")
+
+    frame = ttk.Frame(configurar_banco_janela, padding="5 5 5 5")
+    frame.pack(side="left", fill="both", expand=True)
+
+    campos = ["Tabela","SQL"]
+    parametros = []
+
 
 def criar_botao_servico(frame, funcao, servico, caminho, acao):
     botao = ttk.Button(

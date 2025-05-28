@@ -1,4 +1,4 @@
-import json, requests, pyodbc, os, time, importlib, sqlparse
+import json, requests, pyodbc, os, time, importlib, sqlparse, sys
 
 def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
     conn_str = (
@@ -36,34 +36,7 @@ def iniciarCursorSybase(dsn, usuario, senha, app="APP=BTLS=V2Y7Uq9RxaIfCU87u8ugN
 
     return cursor
         
-def iniciarCursorSQLServer(host, banco_dados, usuario, senha, driver="ODBC Driver 17 for SQL Server"):
-    conn_str = ( 
-        f'DRIVER={driver};'
-        f'SERVER={host};'
-        f'DATABASE={banco_dados};'
-        f'UID={usuario};'
-        f'PWD={senha};'
-    )
-    try:
-        conn = pyodbc.connect(conn_str)
-        return conn.cursor()
-    except Exception as e:
-        print(f"Erro ao conectar ao banco de dados: {e}")
         
-def iniciarCursorOracle(host, banco_dados, usuario, senha, driver="Oracle em OraDB19Home1"):
-    conn_str = (
-        f'DRIVER={driver};'
-        f'DATABASE={banco_dados};'
-        f'UID={usuario};'
-        f'PWD={senha};'
-        f'SERVER={host};'
-    )
-    try:
-        conn = pyodbc.connect(conn_str)
-        return conn.cursor()
-    except Exception as e:
-        print(f"Erro ao conectar ao banco de dados: {e}")
-
 def busca_parametro(parametro):
     cursor = criar_cursor('destino')
     cursor.execute(f'''select * from motor.parametros where tipo_parametro = '{parametro}' ''')
@@ -84,7 +57,7 @@ def envios(servico, funcao):
             script_formatado = sqlparse.format(script, reindent=True, keyword_case='upper')
 
         if funcao == 'Atualizar':
-            cursor_insercao.execute({script_formatado} + "not")
+            cursor_insercao.execute(script_formatado[:-4] + " not " + script_formatado[-4:])
             metodo = 'PUT'
         else:
             cursor_insercao.execute(script_formatado)
@@ -324,7 +297,11 @@ def procura_montagem(nome_arquivo, pasta):
     sistema = busca_parametro('Sistema')
     arquivo = os.path.join("Projeto_Migracao",sistema,pasta,f"{nome_arquivo['nome']}")
     modulo_nome = arquivo.replace("\\", ".").replace("/", ".")
-    modulo = importlib.import_module(modulo_nome)
+    if modulo_nome in sys.modules:
+        importlib.reload(sys.modules[modulo_nome])
+    else:
+        importlib.import_module(modulo_nome)
+    modulo = sys.modules[modulo_nome]
     return modulo
 
 def ler_pasta_config_json(caminho):
