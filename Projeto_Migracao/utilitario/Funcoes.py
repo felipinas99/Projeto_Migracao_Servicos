@@ -13,7 +13,8 @@ def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
     try:
         pyodbc.setDecimalSeparator(".")
         conn = pyodbc.connect(conn_str)
-        return conn.cursor()
+        cursor = conn.cursor()
+        return cursor
     except Exception as e:
         print(f"Erro ao conectar ao banco de dados: {e}")
 
@@ -35,7 +36,6 @@ def iniciarCursorSybase(dsn, usuario, senha, app="APP=BTLS=V2Y7Uq9RxaIfCU87u8ugN
     cursor = conn.cursor()
 
     return cursor
-        
         
 def busca_parametro(parametro):
     cursor = criar_cursor('destino')
@@ -266,7 +266,8 @@ def colunas_sql(cursor, sql):
     colunas = [desc[0] for desc in cursor.description]
     return colunas, linhas
 
-def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql=500):
+def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql=130):
+    
     sistema = busca_parametro('Sistema')
 
     colunas, linhas = colunas_sql(cursor_extracao, sql)
@@ -277,21 +278,26 @@ def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql
     colunas_sql_str = ', '.join(colunas)
     linha_placeholder = f"({', '.join(['?'] * len(colunas))})"
 
+    
+    cursor_envio.connection.autocommit = False
+    cursor_envio.fast_executemany = True
+    start_time = time.time()
+    sql1 = f'''INSERT INTO "{sistema}".{tabela} ({colunas_sql_str}) '''
+    sql2 = f''' ON CONFLICT (id) DO UPDATE SET {on_conflict}'''
     for i in range(0, len(linhas), tamanho_sql):
         batch = linhas[i:i + tamanho_sql]
 
         all_placeholders = ', '.join([linha_placeholder] * len(batch))
         flat_values = [valor for linha in batch for valor in linha]  
 
-        insert_sql = f"""
-        INSERT INTO "{sistema}".{tabela} ({colunas_sql_str})
-        VALUES {all_placeholders}
-        ON CONFLICT (id) DO UPDATE SET {on_conflict}
-        """
-
+        insert_sql = f"""{sql1} VALUES {all_placeholders}{sql2}"""
         cursor_envio.execute(insert_sql, flat_values)
 
     cursor_envio.execute("commit")
+    
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Tempo decorrido: {elapsed_time} segundos")
 
 def procura_montagem(nome_arquivo, pasta):
     sistema = busca_parametro('Sistema')
