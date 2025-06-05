@@ -1,0 +1,1 @@
+select * from "E_Nota".listas_servicos_entidades where id_gerado is null

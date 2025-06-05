@@ -1,4 +1,6 @@
-import json, requests, pyodbc, os, time, importlib, sqlparse, sys
+
+import json, requests, pyodbc, os, time, importlib, sqlparse, sys,  csv , psycopg2 , tempfile
+
 
 def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
     conn_str = (
@@ -13,8 +15,7 @@ def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
     try:
         pyodbc.setDecimalSeparator(".")
         conn = pyodbc.connect(conn_str)
-        cursor = conn.cursor()
-        return cursor
+        return conn.cursor()
     except Exception as e:
         print(f"Erro ao conectar ao banco de dados: {e}")
 
@@ -52,27 +53,26 @@ def envios(servico, funcao):
         montagem = procura_montagem(servico,'Json_envio')
         sistema = busca_parametro('Sistema')
         arquivo = os.path.join("Projeto_Migracao",sistema,"Sql_Envio",f"{servico['nome']}.sql")
+
         with open(arquivo, 'r', encoding='utf-8') as arquivo:
             script = arquivo.read()
-            script_formatado = sqlparse.format(script, reindent=True, keyword_case='upper')
 
         if funcao == 'Atualizar':
-            cursor_insercao.execute(script_formatado[:-4] + " not " + script_formatado[-4:])
+            cursor_insercao.execute(script[:-4] + " not " + script[-4:])
             metodo = 'PUT'
         else:
-            cursor_insercao.execute(script_formatado)
+            cursor_insercao.execute(script)
             metodo = 'POST'
         while True:
             linhas = cursor_insercao.fetchmany(50)
             if not linhas:
                 break
-            
             lote = montagem.montar(linhas, funcao)
             sql = '''
-                INSERT INTO motor.controle_lotes(metodo, tipo_registro, servico, lote_envio)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO motor.controle_lotes(sistema, metodo, tipo_registro, servico, lote_envio)
+                VALUES (?, ?, ?, ?, ?)
             '''
-            params = (metodo, servico['tabela'],servico['servico'], json.dumps(lote))
+            params = (sistema, metodo, servico['tabela'],servico['servico'], json.dumps(lote, default=str))
             cursor_controle_lotes.execute(sql, params)
             cursor_controle_lotes.execute("commit;")
         cursor_insercao.close()
@@ -133,7 +133,7 @@ def postagem():
         cursor_atualiza.close()
         print(f"Erro postagem: {e}")
         time.sleep(5)
-        return False
+        postagem()
 
 def get_lote(url, lote_id, token):
     headers = {
@@ -204,7 +204,7 @@ def get_lotes():
         cursor_atualiza.close()
         print(f"Erro ao get_lotes: {e}")
         time.sleep(5)
-        return False
+        get_lotes()
     
 def atualiza_retorno_lote_itens():
     try:
@@ -222,15 +222,16 @@ def atualiza_retorno_lote_itens():
                     retorno = json.loads(lote.lote_recebido)['retorno']
                     if not retorno:
                         continue
+
                     for item in retorno:
                         mensagem =  str(item.get("situacao")) + ' / '  + str(item.get("mensagem"))
-                        idGerado = item.get('idGerado', {}).get('id') or  item.get("idGerado") 
+                        idGerado = item.get('idGerado', {}).get('id') or item.get('idGerado', {}).get('ids') or item.get("idGerado") 
                         if idGerado == None:
-                            sql = f'''UPDATE "{sistema}".{lote.tipo_registro} set mensagem = ? where id = ?'''
+                            sql = f'''UPDATE "{lote.sistema}".{lote.tipo_registro} set mensagem = ? where id = ?'''
                             params = (mensagem, item['idIntegracao'])
                         else:
-                            sql = f'''UPDATE "{sistema}".{lote.tipo_registro} set id_gerado = ? , mensagem = ? where id = ?'''
-                            params = (idGerado, mensagem ,item['idIntegracao'])
+                            sql = f'''UPDATE "{lote.sistema}".{lote.tipo_registro} set id_gerado = ? , mensagem = ?, atualizado = 'true' where id = ?'''
+                            params = (str(idGerado), mensagem ,item['idIntegracao'])
                         cursor_atualiza.execute(sql, params) 
                         cursor_atualiza.execute("commit")
 
@@ -245,7 +246,7 @@ def atualiza_retorno_lote_itens():
         cursor_atualiza.close()
         print(f"Erro ao atualiza_retorno_lote_itens: {e}")
         time.sleep(5)
-        return False
+        atualiza_retorno_lote_itens()
 
 def criar_cursor(opcao):
     with open("Projeto_Migracao/config_banco.json", "r") as f:
@@ -266,34 +267,62 @@ def colunas_sql(cursor, sql):
     colunas = [desc[0] for desc in cursor.description]
     return colunas, linhas
 
-def execute_sql_extracao(cursor_extracao, cursor_envio, sql, tabela, tamanho_sql=130):
-    
+def execute_sql_extracao(cursor_extracao, sql, tabela):
+# Use psycopg2 para COPY, pois pyodbc não suporta COPY diretamente
+
+    conn = psycopg2.connect(
+    host="localhost",
+    port="5432",
+    dbname="Migracao",
+    user="postgres",
+    password="admin"
+)
+
+    # Criar cursor
+    cursor = conn.cursor()
+
     sistema = busca_parametro('Sistema')
-
     colunas, linhas = colunas_sql(cursor_extracao, sql)
+    colunas_sql_str = ', '.join(colunas)
+    temp_table = f"temp_{tabela}"
 
+    
+    start_time = time.time()
+
+    # 1. Crie uma tabela temporária
+    cursor.execute(f'DROP TABLE IF EXISTS {temp_table}')
+    cursor.execute(f'CREATE TEMP TABLE {temp_table} AS SELECT * FROM "{sistema}".{tabela} LIMIT 0')
+
+    # 2. Escreva os dados em um arquivo CSV temporário
+    with tempfile.NamedTemporaryFile(mode='w+', newline='', delete=False, encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(linhas)
+        temp_csv_path = csvfile.name
+
+    # 3. Use COPY para inserir rapidamente na tabela temporária
+    conn = cursor.connection
+    with open(temp_csv_path, 'r', encoding='utf-8') as f:
+        with conn.cursor() as psy_cursor:
+            psy_cursor.copy_expert(
+                f"COPY {temp_table} ({colunas_sql_str}) FROM STDIN WITH CSV",
+                f
+            )
+        conn.commit()
+
+    # 4. Faça o upsert (merge) dos dados da tabela temporária para a tabela final
     colunas_update = [f"{col} = EXCLUDED.{col}" for col in colunas if col != 'id']
     on_conflict = ', '.join(colunas_update)
+    insert_sql = f'''
+        INSERT INTO "{sistema}".{tabela} ({colunas_sql_str})
+        SELECT {colunas_sql_str} FROM {temp_table}
+        ON CONFLICT (id) DO UPDATE SET {on_conflict}
+    '''
+    cursor.execute(insert_sql)
+    cursor.execute("commit")
 
-    colunas_sql_str = ', '.join(colunas)
-    linha_placeholder = f"({', '.join(['?'] * len(colunas))})"
+    # 5. Limpeza
+    os.remove(temp_csv_path)
 
-    
-    cursor_envio.connection.autocommit = False
-    cursor_envio.fast_executemany = True
-    start_time = time.time()
-    sql1 = f'''INSERT INTO "{sistema}".{tabela} ({colunas_sql_str}) '''
-    sql2 = f''' ON CONFLICT (id) DO UPDATE SET {on_conflict}'''
-    for i in range(0, len(linhas), tamanho_sql):
-        batch = linhas[i:i + tamanho_sql]
-
-        all_placeholders = ', '.join([linha_placeholder] * len(batch))
-        flat_values = [valor for linha in batch for valor in linha]  
-
-        insert_sql = f"""{sql1} VALUES {all_placeholders}{sql2}"""
-        cursor_envio.execute(insert_sql, flat_values)
-
-    cursor_envio.execute("commit")
     
     end_time = time.time()
     elapsed_time = end_time - start_time
@@ -360,7 +389,6 @@ def busca_todos_registros_cloud(servico):
         print(f"Erro na busca_todos_registros_cloud: {e}")
         return
 
-
 def resgate(servico):
     try:
         cursor_resgate = criar_cursor('destino')
@@ -390,14 +418,12 @@ def iniciar_extracao(**kwargs):
             script = arquivo.read()
             script_formatado = sqlparse.format(script, reindent=True, keyword_case='upper')
         cursor_origem = criar_cursor('origem')
-        cursor_destino = criar_cursor('destino')
-        execute_sql_extracao(cursor_origem, cursor_destino, script_formatado, servico["tabela"])
+        execute_sql_extracao(cursor_origem, script_formatado, servico["tabela"])
     except Exception as e:
         print(f"Erro ao executar a extração: {e}")
         return False
     finally:
         cursor_origem.close()
-        cursor_destino.close()
     return True
 
 def iniciar_envios(**kwargs):

@@ -17,8 +17,8 @@ def criar_botao(janela, texto, comando):
     botao = ttk.Button(janela, text=texto, command=comando)
     botao.pack(pady=5)
 
-def criar_entrada(janela, tamanho=14):
-    entrada = ttk.Entry(janela, font=("Helvetica", tamanho))
+def criar_entrada(janela, tamanho=14, largura = 50):
+    entrada = ttk.Entry(janela, font=("Helvetica", tamanho), width=largura)
     entrada.pack(pady=5)
     return entrada 
 
@@ -173,8 +173,16 @@ def abrir_deletar_registros():
     frame = ttk.Frame(configurar_banco_janela, padding="5 5 5 5")
     frame.pack(side="left", fill="both", expand=True)
 
-    campos = ["Tabela","SQL"]
+    campos = ["Tipo","SQL","Tabela"]
     parametros = []
+
+    for frame, titulo, entradas in [(frame, "Parametros", parametros)]:
+        criar_rotulo(frame, f"Configurar Parâmetros ({titulo})", 14)
+        for campo in campos:
+            criar_rotulo(frame, f"{campo}:", 14)
+            entrada = criar_entrada(frame, 14)
+            entradas.append(entrada)
+
 
 
 def criar_botao_servico(frame, funcao, servico, caminho, acao):
@@ -210,3 +218,31 @@ def acao_com_cor(botao, **kwargs):
 
 
 
+def atualizar_tabela_itens(tree, cursor=None):
+    try:
+        if cursor is None:
+            cursor = criar_cursor('destino')
+            # Armazene o cursor no widget para reuso
+            tree.cursor = cursor
+        else:
+            cursor = tree.cursor
+    except Exception as e:
+        return  # Não continue se não conseguir o cursor
+
+    try:
+        cursor.execute('''
+            select 'Pendentes Envio' as descricao , metodo::text,tipo_registro,count(*) from motor.lotes_pendentes_envio lpe  group by 1,2,3
+union 
+select 'Pendentes Processamento' as descricao,'',tipo_registro,count(*) from motor.lotes_pendentes_processamento lpp group by 1,2,3 
+union 
+select 'Pendentes Resgate' as descricao,'',tipo_registro,count(*) from motor.lotes_pendentes_resgate lpr group by 1,2,3
+order by 1,2,3,4
+        ''')
+        rows = cursor.fetchall()
+        tree.delete(*tree.get_children())
+        for row in rows:
+            tree.insert('', 'end', values=(row.descricao, row.metodo,row.tipo_registro, row.count))
+        # Atualiza novamente em 5 segundos, reutilizando o mesmo cursor
+        tree.after(2000, lambda: atualizar_tabela_itens(tree, cursor))
+    except Exception as e:
+        pass

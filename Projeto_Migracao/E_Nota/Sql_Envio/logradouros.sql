@@ -1,0 +1,1 @@
+select * from "E_Nota".logradouros where id_gerado is null

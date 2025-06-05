@@ -1,0 +1,1 @@
+select * from "E_Nota".guias_notas where nota_cloud_id is not null and guia_cloud_id is not null and id_gerado is null

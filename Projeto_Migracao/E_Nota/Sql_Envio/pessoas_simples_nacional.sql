@@ -1,0 +1,1 @@
+select * from "E_Nota".pessoas_simples_nacional where id_gerado is null

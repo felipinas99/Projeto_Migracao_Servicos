@@ -1,0 +1,1 @@
+select id, nome, cpfcnpj  from public.contribuintes

@@ -1,0 +1,1 @@
+select id, nome as descricao, 'INDEXADOR' as tipo_indexador from t_indice ti 

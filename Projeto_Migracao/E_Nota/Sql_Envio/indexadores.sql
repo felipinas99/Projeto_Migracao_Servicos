@@ -1,0 +1,1 @@
+select * from "E_Nota".indexadores where id_gerado is null

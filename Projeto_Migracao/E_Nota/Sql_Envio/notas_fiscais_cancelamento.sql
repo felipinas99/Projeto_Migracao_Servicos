@@ -1,0 +1,1 @@
+select * from "E_Nota".notas_fiscais_cancelamento where nota_fiscal_cloud_id is not null and id_gerado is null

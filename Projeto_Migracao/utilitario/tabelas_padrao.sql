@@ -17,6 +17,7 @@ END $$;
 
 CREATE TABLE if not exists controle_lotes (
     id SERIAL PRIMARY KEY,  
+    sistema VARCHAR,  
     tipo_registro VARCHAR,  
     servico VARCHAR,  
     metodo metodo,
@@ -37,18 +38,18 @@ CREATE TABLE IF NOT EXISTS parametros (
 
 
 CREATE OR REPLACE VIEW lotes_pendentes_envio AS
-SELECT id, metodo, tipo_registro, servico, lote_envio
+SELECT id, sistema, metodo, tipo_registro,  servico, lote_envio
 FROM controle_lotes
 WHERE status_envio in ('NAO_ENVIADO') and lote_id is null;
 
 CREATE OR REPLACE VIEW lotes_pendentes_processamento AS
-SELECT id, tipo_registro, lote_id
+SELECT id, sistema, tipo_registro, lote_id
 FROM controle_lotes
 WHERE status_envio in ('ENVIADO', 'PROCESSANDO', 'AGUARDANDO_EXECUCAO') and lote_id is not null;
 
 CREATE OR REPLACE VIEW lotes_pendentes_resgate AS
-SELECT id, tipo_registro, lote_recebido
+SELECT id, sistema, metodo, tipo_registro, lote_recebido
 FROM controle_lotes
-WHERE status_envio in ('PROCESSADO') and lote_id is not null and ids_atualizados = false and lote_recebido is null;
+WHERE status_envio in ('PROCESSADO') and lote_id is not null and ids_atualizados = false and lote_recebido is not null;
 
 commit;

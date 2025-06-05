@@ -1,0 +1,1 @@
+select * from "E_Nota".competencias where id_gerado is null

@@ -1,0 +1,1 @@
+select * from "E_Nota".bairros where id_gerado is null

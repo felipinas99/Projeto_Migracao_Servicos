@@ -1,11 +1,11 @@
 {
     "origem": {
-        "DRIVER": "PostgreSQL Unicode",
-        "UID": "postgres",
+        "DRIVER": "MySQL ODBC 9.3 Unicode Driver",
+        "UID": "root",
         "PWD": "admin",
-        "DATABASE": "Migracao",
+        "DATABASE": "andradas",
         "SERVER": "localhost",
-        "PORT": "5432",
+        "PORT": "3306",
         "DSN": "",
         "APP": ""
     },

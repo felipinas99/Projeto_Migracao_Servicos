@@ -1,0 +1,124 @@
+{
+    "servicos": [
+        {
+            "nome": "pessoas",
+            "servico": "pessoas",
+            "tabela": "pessoas"
+        },
+        {
+            "nome": "pessoas_perfis",
+            "servico": "pessoas-perfis",
+            "tabela": "pessoas_perfis"
+        },
+        {
+            "nome": "pessoas_emails",
+            "servico": "pessoas-emails",
+            "tabela": "pessoas_emails"
+        },
+        {
+            "nome": "pessoas_telefones",
+            "servico": "pessoas-telefones",
+            "tabela": "pessoas_telefones"
+        },
+        {
+            "nome": "estados",
+            "servico": "estados",
+            "tabela": "estados"
+        },
+        {
+            "nome": "municipios",
+            "servico": "municipios",
+            "tabela": "municipios"
+        },
+        {
+            "nome": "tipos_logradouros",
+            "servico": "tiposlogradouros",
+            "tabela": "tipos_logradouros"
+        },
+        {
+            "nome": "logradouros",
+            "servico": "logradouros",
+            "tabela": "logradouros"
+        },
+        {
+            "nome": "bairros",
+            "servico": "bairros",
+            "tabela": "bairros"
+        },
+        {
+            "nome": "pessoas_enderecos",
+            "servico": "pessoas-enderecos",
+            "tabela": "pessoas_enderecos"
+        },
+        {
+            "nome": "competencias",
+            "servico": "competencias",
+            "tabela": "competencias"
+        },
+        {
+            "nome": "indexadores",
+            "servico": "indexadores",
+            "tabela": "indexadores"
+        },
+        {
+            "nome": "movimentacoes_indexadores",
+            "servico": "movimentacoes-indexadores",
+            "tabela": "movimentacoes_indexadores"
+        },
+        {
+            "nome": "listas_servicos_entidades",
+            "servico": "listas-servicos-entidades",
+            "tabela": "listas_servicos_entidades"
+        },
+        {
+            "nome": "pessoas_listas_servicos_cnaes",
+            "servico": "pessoas-listas-servicos-cnaes",
+            "tabela": "pessoas_listas_servicos_cnaes"
+        },
+        {
+            "nome": "pessoas_portes",
+            "servico": "pessoas-portes",
+            "tabela": "pessoas_portes"
+        },
+        {
+            "nome": "pessoas_simples_nacional",
+            "servico": "pessoas-simples-nacional",
+            "tabela": "pessoas_simples_nacional"
+        },
+        {
+            "nome": "pessoas_atividades",
+            "servico": "pessoas-atividades",
+            "tabela": "pessoas_atividades"
+        },
+        {
+            "nome": "notas_fiscais",
+            "servico": "notas-fiscais",
+            "tabela": "notas_fiscais"
+        },
+        {
+            "nome": "notas_fiscais_servicos",
+            "servico": "notas-fiscais-servicos",
+            "tabela": "notas_fiscais_servicos"
+        },
+        {
+            "nome": "notas_fiscais_cancelamento",
+            "servico": "notas-fiscais-cancelamento",
+            "tabela": "notas_fiscais_cancelamento"
+        },
+        {
+            "nome": "notas_fiscais_substituidas",
+            "servico": "notas-fiscais-substituidas",
+            "tabela": "notas_fiscais_substituidas"
+        },
+        {
+            "nome": "guias",
+            "servico": "guias",
+            "tabela": "guias"
+        },
+        {
+            "nome": "guias_notas",
+            "servico": "guias-notas",
+            "tabela": "guias_notas"
+        }
+    ]
+}

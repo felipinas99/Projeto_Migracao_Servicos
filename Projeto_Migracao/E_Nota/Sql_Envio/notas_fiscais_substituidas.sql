@@ -1,0 +1,1 @@
+select * from "E_Nota".notas_fiscais_substituidas where id_gerado is null

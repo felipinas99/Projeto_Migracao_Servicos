@@ -1,0 +1,1 @@
+select * from "E_Nota".pessoas_listas_servicos_cnaes where id_gerado is null

@@ -1,0 +1,1 @@
+select * from "E_Nota".municipios where id_gerado is null

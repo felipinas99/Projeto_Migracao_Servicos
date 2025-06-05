@@ -1,0 +1,1 @@
+select * from "E_Nota".pessoas_emails where id_gerado is null
