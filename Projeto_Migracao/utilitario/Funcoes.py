@@ -11,6 +11,7 @@ def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
         f'Server={host};'
         f'Port={porta};'
         f'ClientEncoding=UTF8;'
+        # f'MARS_Connection=yes;' 
     )
     try:
         pyodbc.setDecimalSeparator(".")
@@ -18,6 +19,8 @@ def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
         return conn.cursor()
     except Exception as e:
         print(f"Erro ao conectar ao banco de dados: {e}")
+
+
 
 def iniciarCursorSybase(dsn, usuario, senha, app="APP=BTLS=V2Y7Uq9RxaIfCU87u8ugNIW+/03ctxUc6nfxu9n2Qu9omwxmbQccTa3e2zujHW+PFBkBuXBQPnwIDpKrTdNusi811gsL3cvJ/vOOYqOAA5rqDBz4AElLxstkQXonzuc9twe54bkelHF2DpZj4B8M6NmHM4v2RO6PCuRH/fTqFAA=", driver ="SQL Anywhere 16"):
     
@@ -261,11 +264,20 @@ def criar_cursor(opcao):
     return cursor
 
 def colunas_sql(cursor, sql):
+    
+    inicio = time.time()  # Início da contagem do tempo
     sql = sql.encode('utf-8', errors='replace').decode('utf-8')
     cursor.execute(sql)
     linhas = cursor.fetchall()
     colunas = [desc[0] for desc in cursor.description]
+
+    
+    fim = time.time()  # Fim da contagem do tempo
+    print(f"Tempo de execução: {fim - inicio:.2f} segundos")
+
+
     return colunas, linhas
+import os
 
 def execute_sql_extracao(cursor_extracao, sql, tabela):
 # Use psycopg2 para COPY, pois pyodbc não suporta COPY diretamente
@@ -419,16 +431,46 @@ def iniciar_extracao(**kwargs):
             script_formatado = sqlparse.format(script, reindent=True, keyword_case='upper')
         cursor_origem = criar_cursor('origem')
         execute_sql_extracao(cursor_origem, script_formatado, servico["tabela"])
+
+
+        arquivo_atualizar_dependencias = os.path.join("Projeto_Migracao",sistema,"Atualizar_Dependencias.sql")
+        with open(arquivo_atualizar_dependencias, 'r', encoding='utf-8') as arquivo_atualizar_dependencias:
+            script = arquivo_atualizar_dependencias.read()
+            script_formatado2 = sqlparse.format(script, reindent=True, keyword_case='upper')
+        cursor_destino = criar_cursor('destino')
+        cursor_destino.execute(script_formatado2)
+        cursor_destino.execute("commit;")
+
+        cursor_destino.execute(f'''select "{sistema}".atualizar_dependencias('{servico['tabela']}', '{sistema}')''')
+        cursor_destino.execute("commit;")
+
+        
     except Exception as e:
         print(f"Erro ao executar a extração: {e}")
         return False
     finally:
         cursor_origem.close()
+
     return True
 
 def iniciar_envios(**kwargs):
+
+    sistema = busca_parametro('Sistema')
     servico = kwargs.get("servico")
     funcao = kwargs.get("funcao")
+
+    arquivo_atualizar_dependencias = os.path.join("Projeto_Migracao",sistema,"Atualizar_Dependencias.sql")
+    with open(arquivo_atualizar_dependencias, 'r', encoding='utf-8') as arquivo_atualizar_dependencias:
+        script = arquivo_atualizar_dependencias.read()
+        script_formatado2 = sqlparse.format(script, reindent=True, keyword_case='upper')
+    cursor_destino = criar_cursor('destino')
+    cursor_destino.execute(script_formatado2)
+    cursor_destino.execute("commit;")
+
+    cursor_destino.execute(f'''select "{sistema}".atualizar_dependencias('{servico['tabela']}', '{sistema}')''')
+    cursor_destino.execute("commit;")
+
+
     return envios(servico, funcao)
 
 def iniciar_resgate(**kwargs):

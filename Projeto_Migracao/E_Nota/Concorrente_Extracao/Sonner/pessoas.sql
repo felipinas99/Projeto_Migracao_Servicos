@@ -1,6 +1,10 @@
 select
 	tp.id
-	, cast(inscMun as SIGNED) as codigo
+	, case
+		when length(tp.grpMobiliario ) > 2 then cast(tp.grpMobiliario as SIGNED)
+		when length(inscMun) < 2 then tp.id
+		else cast(inscMun as SIGNED)
+	end as codigo
 	, case
 		when length(documento) < 11 then null
 		when length(documento) > 14 then null
@@ -29,12 +33,13 @@ select
 		when length(inscMun) < 2 then null
 		else inscMun
 	end as inscricao_municipal
-	, case when tr.tipo  = 'Faturamento' then 'HOMOLOGADO' 
-	  when tr.tipo  = 'Estimativa' then 'ESTIMADO' 
-	  when tr.tipo  = 'Simples' then 'HOMOLOGADO' 
-	  when tr.tipo  = 'FixoAnual' then 'FIXO' 
-	  when tr.tipo  = 'SociedadeProfissional' then 'FIXO' 
-	  when tr.tipo  = 'NaoIncide' then 'NAO_ENQUADRADO' 
+	, case
+		when tr.tipo = 'Faturamento' then 'HOMOLOGADO'
+		when tr.tipo = 'Estimativa' then 'ESTIMADO'
+		when tr.tipo = 'Simples' then 'HOMOLOGADO'
+		when tr.tipo = 'FixoAnual' then 'FIXO'
+		when tr.tipo = 'SociedadeProfissional' then 'FIXO'
+		when tr.tipo = 'NaoIncide' then 'NAO_ENQUADRADO'
 	end as modalidade_iss
 from
 	andradas.t_pessoa tp
