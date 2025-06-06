@@ -2,7 +2,7 @@ SELECT *
 FROM (
     SELECT *,
            ROW_NUMBER() OVER (PARTITION BY inscricao ORDER BY id) AS rn
-    FROM "E_Nota".pessoas
+    FROM "Livro_Eletronico".pessoas
 ) sub
 WHERE ((inscricao IS NOT NULL AND rn = 1)
    OR inscricao IS null)

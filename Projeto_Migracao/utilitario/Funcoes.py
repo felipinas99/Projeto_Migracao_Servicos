@@ -1,5 +1,5 @@
 
-import json, requests, pyodbc, os, time, importlib, sqlparse, sys,  csv , psycopg2 , tempfile
+import json, requests, pyodbc, os, time, importlib, sqlparse, sys,  csv , psycopg2 , tempfile, os
 
 
 def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
@@ -19,8 +19,6 @@ def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
         return conn.cursor()
     except Exception as e:
         print(f"Erro ao conectar ao banco de dados: {e}")
-
-
 
 def iniciarCursorSybase(dsn, usuario, senha, app="APP=BTLS=V2Y7Uq9RxaIfCU87u8ugNIW+/03ctxUc6nfxu9n2Qu9omwxmbQccTa3e2zujHW+PFBkBuXBQPnwIDpKrTdNusi811gsL3cvJ/vOOYqOAA5rqDBz4AElLxstkQXonzuc9twe54bkelHF2DpZj4B8M6NmHM4v2RO6PCuRH/fTqFAA=", driver ="SQL Anywhere 16"):
     
@@ -277,7 +275,7 @@ def colunas_sql(cursor, sql):
 
 
     return colunas, linhas
-import os
+
 
 def execute_sql_extracao(cursor_extracao, sql, tabela):
 # Use psycopg2 para COPY, pois pyodbc não suporta COPY diretamente
