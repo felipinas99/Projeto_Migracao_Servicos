@@ -43,7 +43,7 @@ FROM controle_lotes
 WHERE status_envio in ('NAO_ENVIADO') and lote_id is null;
 
 CREATE OR REPLACE VIEW lotes_pendentes_processamento AS
-SELECT id, sistema, tipo_registro, lote_id
+SELECT id, sistema, status_envio, tipo_registro, lote_id
 FROM controle_lotes
 WHERE status_envio in ('ENVIADO', 'PROCESSANDO', 'AGUARDANDO_EXECUCAO') and lote_id is not null;
 

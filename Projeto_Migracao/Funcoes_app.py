@@ -1,13 +1,16 @@
+import time
 import ttkbootstrap as ttk 
-from ttkbootstrap.constants import TRUE, LEFT
+from ttkbootstrap.constants import TRUE
 from ttkbootstrap.dialogs import Messagebox
 from ttkbootstrap.tableview import Tableview
 import os, json
 import threading
 
-from utilitario.Funcoes import criar_cursor
+from Projeto_Migracao.utilitario.Funcoes import criar_cursor
 
 config_file = "Projeto_Migracao/config_banco.json"
+
+
 
 def criar_rotulo(janela, texto, tamanho=14):
     rotulo = ttk.Label(janela, text=texto, font=("Helvetica", tamanho))
@@ -246,3 +249,32 @@ order by 1,2,3,4
         tree.after(2000, lambda: atualizar_tabela_itens(tree, cursor))
     except Exception as e:
         pass
+
+def atualizar_tabela_periodicamente(tree, intervalo=5):
+    def worker():
+        while True:
+            # Consulta ao banco em thread separada
+            try:
+                from Projeto_Migracao.utilitario.Funcoes import criar_cursor
+                cursor = criar_cursor('destino')
+                cursor.execute('''
+                    select 'Pendentes Envio' as descricao , metodo::text,tipo_registro,count(*) from motor.lotes_pendentes_envio lpe  group by 1,2,3
+                    union 
+                    select 'Pendentes Processamento' as descricao,'',tipo_registro,count(*) from motor.lotes_pendentes_processamento lpp group by 1,2,3 
+                    union 
+                    select 'Pendentes Resgate' as descricao,'',tipo_registro,count(*) from motor.lotes_pendentes_resgate lpr group by 1,2,3
+                    order by 1,2,3,4
+                ''')
+                rows = cursor.fetchall()
+                cursor.close()
+            except Exception as e:
+                rows = []
+
+            # Atualiza a Treeview na thread principal
+            def atualizar_treeview():
+                tree.delete(*tree.get_children())
+                for row in rows:
+                    tree.insert('', 'end', values=(row.descricao, row.metodo, row.tipo_registro, row.count))
+            tree.after(0, atualizar_treeview)
+            time.sleep(intervalo)
+    threading.Thread(target=worker, daemon=True).start()

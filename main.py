@@ -2,8 +2,9 @@ import locale
 from ttkbootstrap.constants import BOTTOM, CENTER, LEFT, X, RIGHT
 import ttkbootstrap as ttk ,os, sys
 import threading
-from Funcoes_app import abrir_deletar_registros, atualizar_tabela_itens, criar_rotulo, criar_botao_servico, cria_frame_tabela, abrir_configurar_banco, abrir_parametros
-from utilitario.Funcoes import busca_parametro, iniciar_resgate, iniciarCursorGeneric, ler_pasta_config_json, ler_servicos_json, iniciar_delete, iniciar_atualizacao, iniciar_envios, iniciar_extracao, postagem, get_lotes, atualiza_retorno_lote_itens, criar_cursor
+import time
+from Projeto_Migracao.Funcoes_app import abrir_deletar_registros, atualizar_tabela_periodicamente, criar_rotulo, criar_botao_servico, cria_frame_tabela, abrir_configurar_banco, abrir_parametros
+from Projeto_Migracao.utilitario.Funcoes import busca_parametro, iniciar_resgate, ler_pasta_config_json, ler_servicos_json, iniciar_atualizacao, iniciar_envios, iniciar_extracao, postagem, get_lotes, atualiza_retorno_lote_itens
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -93,7 +94,7 @@ def main():
         tree.heading(col, text=col)
         tree.column(col, anchor="center")
     tree.pack(fill="both", expand=True)
-    atualizar_tabela_itens(tree)
+    atualizar_tabela_periodicamente(tree)
 
     rodape = ttk.Label(janela, text="Projeto Migração de dados", font=("Helvetica", 10), anchor=CENTER)
     rodape.pack(side=BOTTOM, fill=X, pady=10)

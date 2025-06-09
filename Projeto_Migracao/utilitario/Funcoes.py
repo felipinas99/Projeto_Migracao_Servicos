@@ -20,6 +20,17 @@ def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
     except Exception as e:
         print(f"Erro ao conectar ao banco de dados: {e}")
 
+def iniciarCursorPostgresql(host, banco_dados, porta, usuario, senha):
+    try:
+        conn = psycopg2.connect(user=usuario,
+        password=senha,
+        dbname=banco_dados,
+        host=host,
+        port=int(porta))
+        return conn.cursor()
+    except Exception as e:
+        print(f"Erro ao conectar ao banco de dados: {e}")
+
 def iniciarCursorSybase(dsn, usuario, senha, app="APP=BTLS=V2Y7Uq9RxaIfCU87u8ugNIW+/03ctxUc6nfxu9n2Qu9omwxmbQccTa3e2zujHW+PFBkBuXBQPnwIDpKrTdNusi811gsL3cvJ/vOOYqOAA5rqDBz4AElLxstkQXonzuc9twe54bkelHF2DpZj4B8M6NmHM4v2RO6PCuRH/fTqFAA=", driver ="SQL Anywhere 16"):
     
     stringCon = 'DRIVER=' + driver + ';SERVER=' + dsn  + ';DSN=' + dsn + ';Uid=' + usuario + ';Pwd=' + senha + ';Encrypt=yes;Connection Timeout=30;APP='+ app +';'
@@ -191,7 +202,7 @@ def get_lotes():
                     break
                 for lote in lista:
                     retorno, situacao = get_lote(url,lote.lote_id, token) 
-                    if situacao in ('PROCESSADO','AGUARDANDO_EXECUCAO','EXECUTANDO'):
+                    if situacao in ('PROCESSADO','AGUARDANDO_EXECUCAO','EXECUTANDO','PROCESSANDO'):
                         sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_recebido = ? where id = ?'''
                         params = (situacao, json.dumps(retorno), lote.id)
                         cursor_atualiza.execute(sql, params)
@@ -276,20 +287,19 @@ def colunas_sql(cursor, sql):
 
     return colunas, linhas
 
-
 def execute_sql_extracao(cursor_extracao, sql, tabela):
-# Use psycopg2 para COPY, pois pyodbc não suporta COPY diretamente
 
-    conn = psycopg2.connect(
-    host="localhost",
-    port="5432",
-    dbname="Migracao",
-    user="postgres",
-    password="admin"
-)
+    with open("Projeto_Migracao/config_banco.json", "r") as f:
+        config = json.load(f)
+    conf = config['destino']
 
-    # Criar cursor
-    cursor = conn.cursor()
+
+    cursor = iniciarCursorPostgresql(banco_dados=conf["DATABASE"],
+                            host=conf["SERVER"],
+                            porta=conf["PORT"],
+                            usuario=conf["UID"],
+                            senha=conf["PWD"])
+
 
     sistema = busca_parametro('Sistema')
     colunas, linhas = colunas_sql(cursor_extracao, sql)

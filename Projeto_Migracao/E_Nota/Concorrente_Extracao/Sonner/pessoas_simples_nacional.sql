@@ -1,13 +1,13 @@
 select
-	tp.id as id
-	, tp.id as pessoa_origem_id
-	, '2025-05-28' data_inicio
-	, '2025-05-28' data_efeito
-	, 'NAO' optante
+	tr.id as id
+	, tr.dataInicio  as data_inicio
+	, tr.dataInicio  as data_efeito
 	, 'MUNICIPAL' as orgao
+	, tr.contribuinte_id as pessoa_origem_id
+	, 'SIM' as optante
 from
-	t_pessoa tp
-	left join t_regimeiss tr on tr.id = tp.regimeISS_id
-where
-	tr.tipo  in('simples')
-	and tp.prestador  = 1
+	t_regimecompetencia tr
+left join t_regimeiss tr2 on
+	tr2.id = tr.regime_id
+where tr2.tipo  = 'Simples'
+and ativo = 1
