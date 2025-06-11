@@ -12,6 +12,13 @@ IF servico = 'pessoas_emails' THEN
   where p.id  = o.pessoa_origem_id and o.pessoa_cloud_id is null and o.id_gerado is null;
 end if;
 
+IF servico = 'pessoas_telefones' THEN
+  update "E_Nota".pessoas_telefones o
+  set pessoa_cloud_id = p.id_gerado
+  from "E_Nota".pessoas p 
+  where p.id  = o.pessoa_origem_id and o.pessoa_cloud_id is null and o.id_gerado is null;
+end if;
+
 
 -- municipios
 IF servico = 'municipios' THEN
@@ -38,13 +45,16 @@ IF servico = 'logradouros' THEN
   FROM "E_Nota".tipos_logradouros p
   WHERE p.descricao ILIKE o.tipo_logradouro_descricao AND o.tipo_logradouro_cloud_id IS NULL AND o.id_gerado IS NULL;
 
-  UPDATE "E_Nota".logradouros p
-  SET id_gerado = p2.id_gerado
-  FROM "E_Nota".logradouros p2
-  WHERE p2.id_gerado IS NOT NULL
-    AND p.id_gerado IS NULL
-    AND trim(p2.nome) ILIKE trim(p.nome)
-    AND p2.municipio_cloud_id = p.municipio_cloud_id;
+UPDATE "E_Nota".logradouros p
+SET id_gerado = p2.id_gerado
+FROM (
+  SELECT id_gerado, nome, municipio_cloud_id
+  FROM "E_Nota".logradouros
+  WHERE id_gerado IS NOT NULL
+) p2
+WHERE p.id_gerado IS NULL
+  AND p2.municipio_cloud_id = p.municipio_cloud_id
+  AND unaccent(lower(trim(p2.nome))) = unaccent(lower(trim(p.nome)));
 END IF;
 
 -- bairros

@@ -219,38 +219,7 @@ def acao_com_cor(botao, **kwargs):
     threading.Thread(target=run_acao).start()
 
 
-
-
-def atualizar_tabela_itens(tree, cursor=None):
-    try:
-        if cursor is None:
-            cursor = criar_cursor('destino')
-            # Armazene o cursor no widget para reuso
-            tree.cursor = cursor
-        else:
-            cursor = tree.cursor
-    except Exception as e:
-        return  # Não continue se não conseguir o cursor
-
-    try:
-        cursor.execute('''
-            select 'Pendentes Envio' as descricao , metodo::text,tipo_registro,count(*) from motor.lotes_pendentes_envio lpe  group by 1,2,3
-union 
-select 'Pendentes Processamento' as descricao,'',tipo_registro,count(*) from motor.lotes_pendentes_processamento lpp group by 1,2,3 
-union 
-select 'Pendentes Resgate' as descricao,'',tipo_registro,count(*) from motor.lotes_pendentes_resgate lpr group by 1,2,3
-order by 1,2,3,4
-        ''')
-        rows = cursor.fetchall()
-        tree.delete(*tree.get_children())
-        for row in rows:
-            tree.insert('', 'end', values=(row.descricao, row.metodo,row.tipo_registro, row.count))
-        # Atualiza novamente em 5 segundos, reutilizando o mesmo cursor
-        tree.after(2000, lambda: atualizar_tabela_itens(tree, cursor))
-    except Exception as e:
-        pass
-
-def atualizar_tabela_periodicamente(tree, intervalo=5):
+def atualizar_tabela_periodicamente(tree, intervalo=2):
     def worker():
         while True:
             # Consulta ao banco em thread separada

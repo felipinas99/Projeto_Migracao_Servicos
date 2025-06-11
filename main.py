@@ -2,7 +2,6 @@ import locale
 from ttkbootstrap.constants import BOTTOM, CENTER, LEFT, X, RIGHT
 import ttkbootstrap as ttk ,os, sys
 import threading
-import time
 from Projeto_Migracao.Funcoes_app import abrir_deletar_registros, atualizar_tabela_periodicamente, criar_rotulo, criar_botao_servico, cria_frame_tabela, abrir_configurar_banco, abrir_parametros
 from Projeto_Migracao.utilitario.Funcoes import busca_parametro, iniciar_resgate, ler_pasta_config_json, ler_servicos_json, iniciar_atualizacao, iniciar_envios, iniciar_extracao, postagem, get_lotes, atualiza_retorno_lote_itens
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')

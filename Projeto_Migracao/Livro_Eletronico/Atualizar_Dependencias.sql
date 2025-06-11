@@ -1,16 +1,124 @@
 
 
-CREATE OR REPLACE FUNCTION "E_Nota".atualizar_dependencias(servico TEXT, sistema TEXT) RETURNS BOOLEAN AS $$
+CREATE OR REPLACE FUNCTION "Livro_Eletronico".atualizar_dependencias(servico TEXT, sistema TEXT) RETURNS BOOLEAN AS $$
 BEGIN
 
-SET search_path TO sistema;
+SET search_path TO "Livro_Eletronico";
+SET search_path = "Livro_Eletronico";
 
-IF servico = 'pessoas_emails' THEN
-  update "E_Nota".pessoas_emails o
-  set pessoa_cloud_id = p.id_gerado
-  from "E_Nota".pessoas p 
-  where p.id  = o.pessoa_origem_id and o.pessoa_cloud_id is null and o.id_gerado is null;
+
+
+IF servico = 'pessoas' THEN
+  update "Livro_Eletronico".pessoas p
+  set id_gerado = p2.id_gerado
+  from "Livro_Eletronico".pessoas p2
+  where p2.id_gerado is not null and p.id_gerado is null and p2.cpf_cnpj = p.cpf_cnpj and length(p2.cpf_cnpj) > 5;
+
+  update "Livro_Eletronico".pessoas pe set enderecos = tab.enderecos  from (SELECT
+        pessoa_cloud_id,
+        json_agg(json_build_object(
+            'id', id,
+            'cep', cep,
+            'complemento', complemento,
+            'numero', numero,
+            'municipio_cloud_id', municipio_cloud_id,
+            'logradouro_cloud_id', logradouro_cloud_id,
+            'bairro_cloud_id', bairro_cloud_id,
+            'pessoa_cloud_id', pessoa_cloud_id,
+            'tipo_endereco', tipo_endereco
+        )) AS enderecos
+    FROM "Livro_Eletronico".pessoas_enderecos
+    GROUP BY pessoa_cloud_id) as tab where tab.pessoa_cloud_id = pe.id_gerado;
+
+
+
 end if;
+
+IF servico = 'municipios' THEN
+  UPDATE "Livro_Eletronico".municipios o
+  SET estado_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".estados p
+  WHERE p.id = o.estado_origem_id AND o.estado_cloud_id IS NULL AND o.id_gerado IS NULL;
+END IF;
+
+IF servico = 'bairros' THEN
+  UPDATE "Livro_Eletronico".bairros o
+  SET municipio_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".municipios p
+  WHERE p.id = o.municipio_origem_id AND o.municipio_cloud_id IS NULL AND o.id_gerado IS NULL;
+END IF;
+
+IF servico = 'logradouros' THEN
+  UPDATE "Livro_Eletronico".logradouros o
+  SET municipio_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".municipios p
+  WHERE p.id = o.municipio_origem_id AND o.municipio_cloud_id IS NULL AND o.id_gerado IS NULL;
+
+  -- UPDATE "Livro_Eletronico".logradouros o
+  -- SET tipo_logradouro_cloud_id = p.id_gerado
+  -- FROM "Livro_Eletronico".tipos_logradouros p
+  -- WHERE p.id = o.tipo_logradouro_origem_id AND o.tipo_logradouro_cloud_id IS NULL AND o.id_gerado IS NULL;
+
+  -- UPDATE "Livro_Eletronico".logradouros o
+  -- SET tipo_logradouro_cloud_id = p.id_gerado
+  -- FROM "Livro_Eletronico".tipos_logradouros p
+  -- WHERE p.descricao ILIKE o.tipo_logradouro_descricao AND o.tipo_logradouro_cloud_id IS NULL AND o.id_gerado IS NULL;
+
+UPDATE "Livro_Eletronico".logradouros p
+SET id_gerado = p2.id_gerado
+FROM (
+  SELECT id_gerado, nome, municipio_cloud_id
+  FROM "Livro_Eletronico".logradouros
+  WHERE id_gerado IS NOT NULL
+) p2
+WHERE p.id_gerado IS NULL
+  AND p2.municipio_cloud_id = p.municipio_cloud_id
+  AND public.unaccent(lower(trim(p2.nome))) = public.unaccent(lower(trim(p.nome)));
+END IF;
+
+
+IF servico = 'pessoas_enderecos' THEN
+  
+  CREATE INDEX if not exists idx_bairros_municipio ON "Livro_Eletronico".bairros (municipio_cloud_id);
+  CREATE INDEX if not exists idx_pessoas_enderecos_nulos ON "Livro_Eletronico".pessoas_enderecos (bairro_cloud_id, id_gerado, municipio_cloud_id);
+
+
+  UPDATE "Livro_Eletronico".pessoas_enderecos o
+  SET municipio_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".municipios p
+  WHERE p.id = o.municipio_origem_id AND o.municipio_cloud_id IS NULL AND o.id_gerado IS NULL;
+
+  UPDATE "Livro_Eletronico".pessoas_enderecos o
+  SET estado_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".estados p
+  WHERE p.id = o.estado_origem_id AND o.estado_cloud_id IS NULL AND o.id_gerado IS NULL;
+
+  UPDATE "Livro_Eletronico".pessoas_enderecos o
+  SET pessoa_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".pessoas p
+  WHERE p.id = o.pessoa_origem_id AND o.pessoa_cloud_id IS NULL AND o.id_gerado IS NULL;
+
+  UPDATE "Livro_Eletronico".pessoas_enderecos o
+  SET logradouro_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".logradouros p
+  WHERE p.id = o.logradouro_origem_id AND o.logradouro_cloud_id IS NULL AND o.id_gerado IS NULL;
+
+  UPDATE "Livro_Eletronico".pessoas_enderecos o
+  SET bairro_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".bairros p
+  WHERE p.id = o.bairro_origem_id AND o.bairro_cloud_id IS NULL AND o.id_gerado IS NULL;
+
+  UPDATE "Livro_Eletronico".pessoas_enderecos o
+SET bairro_cloud_id = p.id_gerado
+FROM (
+    SELECT id_gerado, nome, municipio_cloud_id
+    FROM "Livro_Eletronico".bairros
+) p
+WHERE o.bairro_cloud_id IS NULL
+  AND o.id_gerado IS NULL
+  AND p.municipio_cloud_id = o.municipio_cloud_id
+  AND public.unaccent(trim(p.nome)) ILIKE public.unaccent(trim(o.bairro_descricao));
+END IF;
 
 RETURN true;
 END;

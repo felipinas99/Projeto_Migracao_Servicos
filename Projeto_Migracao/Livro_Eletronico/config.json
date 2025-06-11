@@ -1,6 +1,36 @@
 {
     "servicos": [
     {
+        "nome": "pessoas",
+        "servico": "pessoas",
+        "tabela": "pessoas"
+    },
+    {
+        "nome": "estados",
+        "servico": "estados",
+        "tabela": "estados"
+    },
+    {
+        "nome": "municipios",
+        "servico": "municipios",
+        "tabela": "municipios"
+    },
+    {
+        "nome": "bairros",
+        "servico": "bairros",
+        "tabela": "bairros"
+    },
+    {
+        "nome": "logradouros",
+        "servico": "logradouros",
+        "tabela": "logradouros"
+    },
+    {
+        "nome": "pessoas_enderecos",
+        "servico": "pessoas_enderecos",
+        "tabela": "pessoas_enderecos"
+    },
+    {
         "nome": "graficas",
         "servico": "graficas",
         "tabela": "graficas"

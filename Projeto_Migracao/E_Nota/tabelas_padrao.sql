@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS "E_Nota".logradouros (
     tipo_logradouro_cloud_id int,
     municipio_origem_id int,
     municipio_cloud_id int,
-    nome VARCHAR,
+    nome text,
     cep VARCHAR,
     id_gerado int,
     mensagem text,
@@ -136,16 +136,6 @@ CREATE TABLE IF NOT EXISTS "E_Nota".bairros (
     atualizado varchar
 );
 
-CREATE TABLE IF NOT EXISTS "E_Nota".bairros (
-    id INT PRIMARY KEY,
-    municipio_origem_id int,
-    municipio_cloud_id int,
-    nome VARCHAR,
-    padrao VARCHAR,
-    id_gerado int,
-    mensagem text,
-    atualizado varchar
-);
 
 CREATE TABLE IF NOT EXISTS "E_Nota".pessoas_enderecos (
     id INT PRIMARY KEY,
