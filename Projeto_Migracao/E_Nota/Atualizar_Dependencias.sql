@@ -19,6 +19,13 @@ IF servico = 'pessoas_telefones' THEN
   where p.id  = o.pessoa_origem_id and o.pessoa_cloud_id is null and o.id_gerado is null;
 end if;
 
+IF servico = 'movimentacoes_indexadores' THEN
+  update "E_Nota".movimentacoes_indexadores o
+  set indexador_cloud_id = p.id_gerado
+  from "E_Nota".indexadores p 
+  where p.id  = o.indexador_origem_id and o.indexador_cloud_id is null and o.id_gerado is null;
+end if;
+
 
 -- municipios
 IF servico = 'municipios' THEN
@@ -167,35 +174,35 @@ IF servico = 'notas_fiscais' THEN
   FROM "E_Nota".competencias c
   WHERE n.competencias_descricao BETWEEN c.data_inicial AND c.data_final AND n.competencias_cloud_id IS NULL AND competencias_descricao IS NOT NULL AND n.id_gerado IS NULL;
 
-  UPDATE "E_Nota".notas_fiscais n
-  SET series_rps_cloud_id = s.id_gerado
-  FROM "E_Nota".series_rps s
-  WHERE s.id = n.series_rps_origem_id AND n.series_rps_cloud_id IS NULL AND n.id_gerado IS NULL;
+  -- UPDATE "E_Nota".notas_fiscais n
+  -- SET series_rps_cloud_id = s.id_gerado
+  -- FROM "E_Nota".series_rps s
+  -- WHERE s.id = n.series_rps_origem_id AND n.series_rps_cloud_id IS NULL AND n.id_gerado IS NULL;
 
-  UPDATE "E_Nota".notas_fiscais n
-  SET prestador_distrito_cloud_id = d.id_gerado
-  FROM "E_Nota".distritos d
-  WHERE d.id = n.prestador_distrito_origem_id AND n.prestador_distrito_cloud_id IS NULL AND n.id_gerado IS NULL;
+  -- UPDATE "E_Nota".notas_fiscais n
+  -- SET prestador_distrito_cloud_id = d.id_gerado
+  -- FROM "E_Nota".distritos d
+  -- WHERE d.id = n.prestador_distrito_origem_id AND n.prestador_distrito_cloud_id IS NULL AND n.id_gerado IS NULL;
 
   UPDATE "E_Nota".notas_fiscais n
   SET tomador_cloud_id = p.id_gerado
   FROM "E_Nota".pessoas p
   WHERE p.id = n.tomador_origem_id AND n.tomador_cloud_id IS NULL AND n.id_gerado IS NULL;
 
-  UPDATE "E_Nota".notas_fiscais n
-  SET tomador_pais_cloud_id = p.id_gerado
-  FROM "E_Nota".paises p
-  WHERE p.id = n.tomador_pais_origem_id AND n.tomador_pais_cloud_id IS NULL AND n.id_gerado IS NULL;
+  -- UPDATE "E_Nota".notas_fiscais n
+  -- SET tomador_pais_cloud_id = p.id_gerado
+  -- FROM "E_Nota".paises p
+  -- WHERE p.id = n.tomador_pais_origem_id AND n.tomador_pais_cloud_id IS NULL AND n.id_gerado IS NULL;
 
-  UPDATE "E_Nota".notas_fiscais n
-  SET intermediario_cloud_id = p.id_gerado
-  FROM "E_Nota".pessoas p
-  WHERE p.id = n.intermediario_origem_id AND n.intermediario_cloud_id IS NULL AND n.id_gerado IS NULL;
+  -- UPDATE "E_Nota".notas_fiscais n
+  -- SET intermediario_cloud_id = p.id_gerado
+  -- FROM "E_Nota".pessoas p
+  -- WHERE p.id = n.intermediario_origem_id AND n.intermediario_cloud_id IS NULL AND n.id_gerado IS NULL;
 
-  UPDATE "E_Nota".notas_fiscais n
-  SET pais_servico_cloud_id = p.id_gerado
-  FROM "E_Nota".paises p
-  WHERE p.id = n.pais_servico_origem_id AND n.pais_servico_cloud_id IS NULL AND n.id_gerado IS NULL;
+  -- UPDATE "E_Nota".notas_fiscais n
+  -- SET pais_servico_cloud_id = p.id_gerado
+  -- FROM "E_Nota".paises p
+  -- WHERE p.id = n.pais_servico_origem_id AND n.pais_servico_cloud_id IS NULL AND n.id_gerado IS NULL;
 
   UPDATE "E_Nota".notas_fiscais n
   SET municipio_servico_cloud_id = m.id_gerado

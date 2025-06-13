@@ -3,6 +3,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import TRUE
 from ttkbootstrap.dialogs import Messagebox
 from ttkbootstrap.tableview import Tableview
+from ttkbootstrap import Combobox
 import os, json
 import threading
 
@@ -132,39 +133,61 @@ def abrir_parametros():
     frame = ttk.Frame(configurar_banco_janela, padding="5 5 5 5")
     frame.pack(side="left", fill="both", expand=True)
 
-    campos = ["Token","Sistema","Concorrente","Url_Base","Url_Lote"]
+    campos = ["Token", "Sistema", "Concorrente", "Url_Base", "Url_Lote"]
     parametros = []
 
-    configuracoes = carregar_dados_tabela('parametros')
-    configuracoes_dict = {linha[1]: linha[2] for linha in configuracoes}  # Supondo que a estrutura seja (id, tipo_parametro, valor)
+    # Opções fixas para os campos desejados
+    opcoes_sistema = ["Livro_Eletronico", "E_Nota", "Protocolo"]
+    opcoes_url_base = [
+        "https://nota-eletronica.betha.cloud/service-layer/api/",
+        "http://e-gov.betha.com.br/glb/service-layer/v2/api/",
+        "https://iss.betha.cloud/service-layer-arrecadacao/api/"
+    ]
+    opcoes_url_lote = [
+        "https://nota-eletronica.betha.cloud/service-layer/api/consulta/",
+        "http://e-gov.betha.com.br/glb/service-layer/v2/api/lotes/",
+        "https://iss.betha.cloud/service-layer-arrecadacao/api/indexadores/"
+    ]
 
-    for frame, titulo, entradas in [(frame, "Parametros", parametros)]:
-        criar_rotulo(frame, f"Configurar Parâmetros ({titulo})", 14)
-        for campo in campos:
-            criar_rotulo(frame, f"{campo}:", 14)
+    configuracoes = carregar_dados_tabela('parametros')
+    configuracoes_dict = {linha[1]: linha[2] for linha in configuracoes}
+
+    for campo in campos:
+        criar_rotulo(frame, f"{campo}:", 14)
+        if campo == "Sistema":
+            entrada = Combobox(frame, font=("Helvetica", 14), values=opcoes_sistema, width=50)
+            if campo in configuracoes_dict:
+                entrada.set(configuracoes_dict[campo])
+        elif campo == "Url_Base":
+            entrada = Combobox(frame, font=("Helvetica", 14), values=opcoes_url_base, width=50)
+            if campo in configuracoes_dict:
+                entrada.set(configuracoes_dict[campo])
+        elif campo == "Url_Lote":
+            entrada = Combobox(frame, font=("Helvetica", 14), values=opcoes_url_lote, width=50)
+            if campo in configuracoes_dict:
+                entrada.set(configuracoes_dict[campo])
+        else:
             entrada = criar_entrada(frame, 14)
-            # Insere o valor correspondente ao campo, se existir no dicionário
             if campo in configuracoes_dict:
                 entrada.insert(0, configuracoes_dict[campo])
-            entradas.append(entrada)
+        entrada.pack(pady=5)
+        parametros.append(entrada)
 
     def salvar_parametros():
         for i, campo in enumerate(campos):
-            valor = parametros[i].get()  # Obtém o valor do campo
+            valor = parametros[i].get()
             try:
                 cursor = criar_cursor('destino')
-                # Atualiza ou insere o valor no banco de dados
                 cursor.execute(
                     "INSERT INTO motor.parametros (tipo_parametro, valor) VALUES (?, ?) "
                     "ON CONFLICT (tipo_parametro) DO UPDATE SET valor = EXCLUDED.valor",
                     (campo, valor)
-                )       
+                )
                 cursor.execute("commit")
                 print(f"Parâmetro '{campo}' salvo com sucesso!")
             except Exception as e:
                 print(f"Erro ao salvar o parâmetro '{campo}': {e}")
 
-    # Botão para salvar os dados
     botao_salvar = ttk.Button(configurar_banco_janela, text="Salvar", command=salvar_parametros)
     botao_salvar.pack(pady=10)
 

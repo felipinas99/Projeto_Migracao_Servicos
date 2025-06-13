@@ -29,9 +29,6 @@ IF servico = 'pessoas' THEN
         )) AS enderecos
     FROM "Livro_Eletronico".pessoas_enderecos
     GROUP BY pessoa_cloud_id) as tab where tab.pessoa_cloud_id = pe.id_gerado;
-
-
-
 end if;
 
 IF servico = 'municipios' THEN
@@ -53,16 +50,6 @@ IF servico = 'logradouros' THEN
   SET municipio_cloud_id = p.id_gerado
   FROM "Livro_Eletronico".municipios p
   WHERE p.id = o.municipio_origem_id AND o.municipio_cloud_id IS NULL AND o.id_gerado IS NULL;
-
-  -- UPDATE "Livro_Eletronico".logradouros o
-  -- SET tipo_logradouro_cloud_id = p.id_gerado
-  -- FROM "Livro_Eletronico".tipos_logradouros p
-  -- WHERE p.id = o.tipo_logradouro_origem_id AND o.tipo_logradouro_cloud_id IS NULL AND o.id_gerado IS NULL;
-
-  -- UPDATE "Livro_Eletronico".logradouros o
-  -- SET tipo_logradouro_cloud_id = p.id_gerado
-  -- FROM "Livro_Eletronico".tipos_logradouros p
-  -- WHERE p.descricao ILIKE o.tipo_logradouro_descricao AND o.tipo_logradouro_cloud_id IS NULL AND o.id_gerado IS NULL;
 
 UPDATE "Livro_Eletronico".logradouros p
 SET id_gerado = p2.id_gerado
@@ -109,16 +96,59 @@ IF servico = 'pessoas_enderecos' THEN
   WHERE p.id = o.bairro_origem_id AND o.bairro_cloud_id IS NULL AND o.id_gerado IS NULL;
 
   UPDATE "Livro_Eletronico".pessoas_enderecos o
-SET bairro_cloud_id = p.id_gerado
-FROM (
-    SELECT id_gerado, nome, municipio_cloud_id
-    FROM "Livro_Eletronico".bairros
-) p
-WHERE o.bairro_cloud_id IS NULL
-  AND o.id_gerado IS NULL
-  AND p.municipio_cloud_id = o.municipio_cloud_id
-  AND public.unaccent(trim(p.nome)) ILIKE public.unaccent(trim(o.bairro_descricao));
+  SET bairro_cloud_id = p.id_gerado
+  FROM (
+      SELECT id_gerado, nome, municipio_cloud_id
+      FROM "Livro_Eletronico".bairros
+  ) p
+  WHERE o.bairro_cloud_id IS NULL
+    AND o.id_gerado IS NULL
+    AND p.municipio_cloud_id = o.municipio_cloud_id
+    AND public.unaccent(trim(p.nome)) ILIKE public.unaccent(trim(o.bairro_descricao));
 END IF;
+
+
+IF servico = 'indexadores_valores' THEN
+  update "Livro_Eletronico".indexadores_valores o
+  set indexador_cloud_id = p.id_gerado
+  from "Livro_Eletronico".indexadores p 
+  where p.id  = o.indexador_origem_id and o.indexador_cloud_id is null and o.id_gerado is null;
+end if;
+
+IF servico = 'contribuintes' THEN
+
+  -- Atualiza pessoa_cloud_id
+  UPDATE "Livro_Eletronico".contribuintes o
+  SET pessoa_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".pessoas p
+  WHERE p.id = o.pessoa_origem_id AND o.pessoa_cloud_id IS NULL AND o.id_gerado IS  NULL;
+
+  -- Atualiza contador_cloud_id
+  -- UPDATE "Livro_Eletronico".contribuintes o
+  -- SET contador_cloud_id = p.id_gerado
+  -- FROM "Livro_Eletronico".contadores p
+  -- WHERE p.id = o.contador_origem_id AND o.contador_cloud_id IS NULL AND o.id_gerado IS  NULL;
+
+  -- Atualiza tipo_cloud_id
+  -- UPDATE "Livro_Eletronico".contribuintes o
+  -- SET tipo_cloud_id = p.id_gerado
+  -- FROM "Livro_Eletronico".tipos p
+  -- WHERE p.id = o.tipo_origem_id AND o.tipo_cloud_id IS NULL AND o.id_gerado IS  NULL;
+
+  -- Atualiza banco_cloud_id
+  -- UPDATE "Livro_Eletronico".contribuintes o
+  -- SET banco_cloud_id = p.id_gerado
+  -- FROM "Livro_Eletronico".bancos p
+  -- WHERE p.id = o.banco_origem_id AND o.banco_cloud_id IS NULL AND o.id_gerado IS  NULL;
+
+  -- Atualiza lista_servico_cloud_id
+  -- UPDATE "Livro_Eletronico".contribuintes o
+  -- SET lista_servico_cloud_id = p.id_gerado
+  -- FROM "Livro_Eletronico".listas_servicos p
+  -- WHERE p.id = o.lista_servico_origem_id AND o.lista_servico_cloud_id IS NULL AND o.id_gerado IS  NULL;
+
+END IF;
+
 
 RETURN true;
 END;

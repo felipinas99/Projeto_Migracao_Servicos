@@ -1,0 +1,1 @@
+select * from "Livro_Eletronico".indexadores where id_gerado is null

@@ -20,8 +20,8 @@ select
 	, numero as nro_nota
 	, concat(cast(dataPrestacao as char), ' 00:00:00') as data_hora_fato_gerador
 	, concat(cast(dataPrestacao as char), ' 00:00:00') as data_hora_emissao
-	-- , upper(CONCAT(SUBSTRING(td.senha, 1, 4), SUBSTRING(td.senha, 5, 4), SUBSTRING(td.senha, 9, 4), SUBSTRING(td.senha, 13, 4))) as nro_verificacao
-	, tn.id as nro_verificacao
+	, upper(CONCAT(SUBSTRING(td.senha, 1, 4), SUBSTRING(td.senha, 5, 4))) as nro_verificacao
+	-- , tn.id as nro_verificacao
 	, case
 		when td.dataCancelamento is not null then 'CANCELADA'
 		else 'NORMAL'
@@ -79,13 +79,14 @@ select
 		when tr.tipo = 'webIssIsento' then 'SIM'
 		else 'NAO'
 	end as prestador_imune
-	 , case when tr.tipo  = 'Faturamento' then 'HOMOLOGADO' 
+	, case 
+	  when tr.tipo  = 'Faturamento' then 'HOMOLOGADO' 
 	  when tr.tipo  = 'Estimativa' then 'ESTIMADO' 
 	  when tr.tipo  = 'Simples' then 'HOMOLOGADO' 
 	  when tr.tipo  = 'FixoAnual' then 'FIXO' 
 	  when tr.tipo  = 'SociedadeProfissional' then 'FIXO' 
 	  when tr.tipo  = 'NaoIncide' then 'NAO_ENQUADRADO' 
-	  end as modalidade_iss
+	  end as prestador_modalidade_iss
 from
 	t_notafiscal tn
 left join t_documento td on

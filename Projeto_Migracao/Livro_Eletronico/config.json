@@ -31,194 +31,29 @@
         "tabela": "pessoas_enderecos"
     },
     {
-        "nome": "graficas",
-        "servico": "graficas",
-        "tabela": "graficas"
+        "nome": "competencias",
+        "servico": "competencias",
+        "tabela": "competencias"
     },
     {
-        "nome": "despesas",
-        "servico": "despesas",
-        "tabela": "despesas"
+        "nome": "indexadores",
+        "servico": "indexadores",
+        "tabela": "indexadores"
     },
     {
-        "nome": "series",
-        "servico": "series",
-        "tabela": "series"
+        "nome": "indexadores_valores",
+        "servico": "indexadoresvalores",
+        "tabela": "indexadores_valores"
     },
     {
-        "nome": "materiais",
-        "servico": "materiais",
-        "tabela": "materiais"
+        "nome": "contribuintes",
+        "servico": "contribuintes",
+        "tabela": "contribuintes"
     },
     {
-        "nome": "planoscontas",
-        "servico": "planoscontas",
-        "tabela": "planoscontas"
-    },
-    {
-        "nome": "planoscontasservicos",
-        "servico": "planoscontasservicos",
-        "tabela": "planoscontasservicos"
-    },
-    {
-        "nome": "planoscontasservicosaliq",
-        "servico": "planoscontasservicosaliq",
-        "tabela": "planoscontasservicosaliq"
-    },
-    {
-        "nome": "tomadoresprestadores",
-        "servico": "tomadoresprestadores",
-        "tabela": "tomadoresprestadores"
-    },
-    {
-        "nome": "declaracoes",
-        "servico": "declaracoes",
-        "tabela": "declaracoes"
-    },
-    {
-        "nome": "declaracoesdf",
-        "servico": "declaracoesdf",
-        "tabela": "declaracoesdf"
-    },
-    {
-        "nome": "declaracoesdfitens",
-        "servico": "declaracoesdfitens",
-        "tabela": "declaracoesdfitens"
-    },
-    {
-        "nome": "declaracoesdfmateriais",
-        "servico": "declaracoesdfmateriais",
-        "tabela": "declaracoesdfmateriais"
-    },
-    {
-        "nome": "declaracoessimpl",
-        "servico": "declaracoessimpl",
-        "tabela": "declaracoessimpl"
-    },
-    {
-        "nome": "declaracoesissfixo",
-        "servico": "declaracoesissfixo",
-        "tabela": "declaracoesissfixo"
-    },
-    {
-        "nome": "fiscalizacaoperiodos",
-        "servico": "fiscalizacaoperiodos",
-        "tabela": "fiscalizacaoperiodos"
-    },
-    {
-        "nome": "fiscalizacaoperiodoshistoricos",
-        "servico": "fiscalizacaoperiodoshistoricos",
-        "tabela": "fiscalizacaoperiodoshistoricos"
-    },
-    {
-        "nome": "itensissfixo",
-        "servico": "itensissfixo",
-        "tabela": "itensissfixo"
-    },
-    {
-        "nome": "subitensissfixo",
-        "servico": "subitensissfixo",
-        "tabela": "subitensissfixo"
-    },
-    {
-        "nome": "liberacoesaidf",
-        "servico": "liberacoesaidf",
-        "tabela": "liberacoesaidf"
-    },
-    {
-        "nome": "liberacoesaidfvalidade",
-        "servico": "liberacoesaidfvalidade",
-        "tabela": "liberacoesaidfvalidade"
-    },
-    {
-        "nome": "liberacoesaidfanexos",
-        "servico": "liberacoesaidfanexos",
-        "tabela": "liberacoesaidfanexos"
-    },
-    {
-        "nome": "notasavulsas",
-        "servico": "notasavulsas",
-        "tabela": "notasavulsas"
-    },
-    {
-        "nome": "notasavulsasenderecos",
-        "servico": "notasavulsasenderecos",
-        "tabela": "notasavulsasenderecos"
-    },
-    {
-        "nome": "notasavulsasitens",
-        "servico": "notasavulsasitens",
-        "tabela": "notasavulsasitens"
-    },
-    {
-        "nome": "declaracoesbancos",
-        "servico": "declaracoesbancos",
-        "tabela": "declaracoesbancos"
-    },
-    {
-        "nome": "declaracoesdespesas",
-        "servico": "declaracoesdespesas",
-        "tabela": "declaracoesdespesas"
-    },
-    {
-        "nome": "declaracoesdespesasitens",
-        "servico": "declaracoesdespesasitens",
-        "tabela": "declaracoesdespesasitens"
-    },
-    {
-        "nome": "declaracoesfaturamentos",
-        "servico": "declaracoesfaturamentos",
-        "tabela": "declaracoesfaturamentos"
-    },
-    {
-        "nome": "declaracoestaxasespeciais",
-        "servico": "declaracoestaxasespeciais",
-        "tabela": "declaracoestaxasespeciais"
-    },
-    {
-        "nome": "declaracoesdftaxas",
-        "servico": "declaracoesdftaxas",
-        "tabela": "declaracoesdftaxas"
-    },
-    {
-        "nome": "guiasaidf",
-        "servico": "guiasaidf",
-        "tabela": "guiasaidf"
-    },
-    {
-        "nome": "guiasdeclaracoes",
-        "servico": "guiasdeclaracoes",
-        "tabela": "guiasdeclaracoes"
-    },
-    {
-        "nome": "guiasnotasavulsas",
-        "servico": "guiasnotasavulsas",
-        "tabela": "guiasnotasavulsas"
-    },
-    {
-        "nome": "guiastaxasdiversas",
-        "servico": "guiastaxasdiversas",
-        "tabela": "guiastaxasdiversas"
-    },
-    {
-        "nome": "guiastaxasespeciais",
-        "servico": "guiastaxasespeciais",
-        "tabela": "guiastaxasespeciais"
-    },
-    {
-        "nome": "aliquotassimplesnac",
-        "servico": "aliquotassimplesnac",
-        "tabela": "aliquotassimplesnac"
-    },
-    {
-        "nome": "aliqsimplesnacserv",
-        "servico": "aliqsimplesnacserv",
-        "tabela": "aliqsimplesnacserv"
-    },
-    {
-        "nome": "aliqsimplesnacfaixas",
-        "servico": "aliqsimplesnacfaixas",
-        "tabela": "aliqsimplesnacfaixas"
+        "nome": "listas_servicos",
+        "servico": "listasservicos",
+        "tabela": "listas_servicos"
     }
 ]
 }

@@ -113,5 +113,92 @@ CREATE TABLE IF NOT EXISTS "Livro_Eletronico".pessoas_enderecos (
     atualizado varchar
 );
 
+CREATE TABLE IF NOT EXISTS "Livro_Eletronico".competencias (
+    id INT PRIMARY KEY,
+    descricao VARCHAR,
+    data_inicial VARCHAR,
+    data_final VARCHAR,
+    data_vencimento VARCHAR,
+    entidade_cloud_id VARCHAR,
+    id_gerado int,
+    mensagem text,
+    atualizado varchar
+);
+
+CREATE TABLE IF NOT EXISTS "Livro_Eletronico".indexadores (
+    id INT PRIMARY KEY,
+    tipo VARCHAR,
+    sigla VARCHAR,
+    descricao VARCHAR,
+    moeda_corrente VARCHAR,
+    id_gerado int,
+    mensagem text,
+    atualizado varchar
+);
+
+CREATE TABLE IF NOT EXISTS "Livro_Eletronico".indexadores_valores (
+    id INT PRIMARY KEY,
+    indexador_origem_id int,
+    indexador_cloud_id int,
+    valor VARCHAR,
+    data_hora_indexador VARCHAR,
+    id_gerado int,
+    mensagem text,
+    atualizado varchar
+);
+
+CREATE TABLE IF NOT EXISTS "Livro_Eletronico".contribuintes (
+    id INT PRIMARY KEY,
+    pessoa_origem_id INT,
+    pessoa_cloud_id INT,
+    contador_origem_id INT,
+    contador_cloud_id INT,
+    tipo_origem_id INT,
+    tipo_cloud_id INT,
+    banco_origem_id INT,
+    banco_cloud_id INT,
+    lista_servico_origem_id INT,
+    lista_servico_cloud_id INT,
+    enquadramento VARCHAR,
+    tipo_contribuinte VARCHAR,
+    data_adesao_nota VARCHAR,
+    tipo_pessoa VARCHAR,
+    cpf_cnpj VARCHAR,
+    optante_sn VARCHAR,
+    escritura_dfp VARCHAR,
+    escritura_dft VARCHAR,
+    permite_deducao VARCHAR,
+    declara_conjugada VARCHAR,
+    descontado_prefeitura VARCHAR,
+    permite_taxas_especiais VARCHAR,
+    isento_taxa_expediente VARCHAR,
+    possui_pendencias VARCHAR,
+    permite_gerar_decl_por_documento VARCHAR,
+    data_abertura VARCHAR,
+    id_gerado INT,
+    mensagem TEXT,
+    atualizado VARCHAR
+);
+
+CREATE TABLE IF NOT EXISTS "Livro_Eletronico".listas_servicos (
+    id INT PRIMARY KEY,
+    lista_servico_cloud_id VARCHAR,
+    lista_servico_origem_id VARCHAR,
+    aliquota VARCHAR,
+    data_adesao VARCHAR,
+    iss_devido_local_prest VARCHAR,
+    indice_substituicao VARCHAR,
+    permite_alterar_aliquota VARCHAR,
+    indice_deducao VARCHAR,
+    aliq_federal VARCHAR,
+    aliq_estadual VARCHAR,
+    aliq_municipal VARCHAR,
+    versao_ibpt VARCHAR,
+    entidade_cloud_id int,
+    id_gerado jsonb,
+    mensagem TEXT,
+    atualizado VARCHAR
+);
+
 
 commit;

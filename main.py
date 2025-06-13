@@ -2,7 +2,7 @@ import locale
 from ttkbootstrap.constants import BOTTOM, CENTER, LEFT, X, RIGHT
 import ttkbootstrap as ttk ,os, sys
 import threading
-from Projeto_Migracao.Funcoes_app import abrir_deletar_registros, atualizar_tabela_periodicamente, criar_rotulo, criar_botao_servico, cria_frame_tabela, abrir_configurar_banco, abrir_parametros
+from Projeto_Migracao.Funcoes_app import abrir_deletar_registros, atualizar_tabela_periodicamente, criar_entrada, criar_rotulo, criar_botao_servico, cria_frame_tabela, abrir_configurar_banco, abrir_parametros
 from Projeto_Migracao.utilitario.Funcoes import busca_parametro, iniciar_resgate, ler_pasta_config_json, ler_servicos_json, iniciar_atualizacao, iniciar_envios, iniciar_extracao, postagem, get_lotes, atualiza_retorno_lote_itens
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
@@ -64,6 +64,11 @@ def main():
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
 
+    # rotulo = ttk.Label(frame_servicos, text='123', font=("Helvetica", 14))
+    # rotulo.pack(side=LEFT, anchor="n", padx=0, pady=10, ipadx=10, ipady=0)
+    # entrada = criar_entrada(frame_servicos, 14)
+
+
     for servico in servicos:
         frame_servico = ttk.Frame(scrollable_frame, padding="10 20 0 0")
         frame_servico.pack(pady=0, padx=0, fill=X)
@@ -83,7 +88,7 @@ def main():
     label_tabela = ttk.Label(frame_tabela, text="Lotes", font=("Helvetica", 12))
     label_tabela.pack(anchor="center", pady=(0, 5))
     columns = ("Lotes",  "Metodo", "Tipo Registro","Total")
-    tree = ttk.Treeview(frame_tabela, columns=columns, show="headings", height=3)
+    tree = ttk.Treeview(frame_tabela, columns=columns, show="headings", height=10)
     tree.column("Lotes", width=180, anchor="center")
     tree.column("Metodo", width=60, anchor="center")
     tree.column("Tipo Registro", width=150, anchor="center")

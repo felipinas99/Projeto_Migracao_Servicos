@@ -162,8 +162,8 @@ def get_lote(url, lote_id, token):
 
         situacao = resultado.get('situacao') or resultado.get('statusLote')
         match situacao:
-            case 'EXECUTANDO':
-                return resultado, 'PROCESSANDO'
+            case 'EXECUTANDO' | 'EM PROCESSAMENTO':
+                return resultado, 'PROCESSANDO' 
             case 'ERRO' | 'ERROR':
                 return resultado, 'ERRO'
             case 'EXECUTADO' | 'PROCESSADO' | 'EXECUTADO_OK'| 'EXECUTADO_PARCIALMENTE_OK':
@@ -172,7 +172,7 @@ def get_lote(url, lote_id, token):
                 return resultado, 'AGUARDANDO_EXECUCAO'
             case _:
                 print(f"Situação desconhecida ou ausente: {situacao}")
-                return resultado, 'ERRO'
+                return resultado, 'DESCONHECIDO'
 
     except requests.exceptions.RequestException as e:
         print(f"Erro na requisição: {e}")
@@ -275,6 +275,8 @@ def atualiza_retorno_lote_itens():
                         if isinstance(id_gerado, dict):
                             id_gerado = id_gerado.get('i'+str(lote.tipo_registro).capitalize())
                             # id_gerado = json.dumps(id_gerado, default=str)
+                            if id_gerado == None:
+                                id_gerado = json.dumps(item.get("idGerado"))
 
 
 
@@ -303,63 +305,6 @@ def atualiza_retorno_lote_itens():
         print(f"Erro ao atualiza_retorno_lote_itens: {e}")
         time.sleep(5)
         atualiza_retorno_lote_itens()
-
-def atualiza_retorno_lote_itens_():
-    try:
-        while True:
-            cursor = criar_cursor('destino')
-            cursor_atualiza = criar_cursor('destino')
-            sistema = busca_parametro('Sistema')
-            cursor.execute(f'''select * from motor.lotes_pendentes_resgate lpp where sistema = '{sistema}' ''')
-            while True:
-                lista = cursor.fetchmany(50)
-                if not lista:
-                    time.sleep(5)
-                    break
-                for lote in lista:
-                    retorno = json.loads(lote.lote_recebido)['retorno']
-                    if not retorno:
-                        continue
-
-                    for item in retorno:
-                        mensagem =  (str(item.get("situacao")) or str(item.get("status")) ) + ' / '  + str(item.get("mensagem"))
-                        mensagemf = f'''mensagem = {mensagem}'''
-                        id_gerado = item.get('idGerado', {}).get('id') or item.get('idGerado', {}).get('ids') or item.get("idGerado") 
-                        if isinstance(id_gerado, dict):
-                            id_gerado = id_gerado.get('i'+str(lote.tipo_registro).capitalize())
-                            # id_gerado = json.dumps(id_gerado, default=str)
-
-                        if item.get("status") == 'SUCESSO' or id_gerado != None:
-                            atualizado = '''atualizado = 'true' '''
-                        else:
-                            atualizado = '''atualizado = 'false' '''
-
-                        if id_gerado != None:
-                            id_gerado = f'''id_gerado = {id_gerado}'''
-                        else:
-                            id_gerado = None
-
-                        if id_gerado == None:
-                            sql = f'''UPDATE "{lote.sistema}".{lote.tipo_registro} set {atualizado} , '{mensagemf}' where id = {item['idIntegracao']}'''
-                        else:
-                            sql = f'''UPDATE "{lote.sistema}".{lote.tipo_registro} set {id_gerado} , {atualizado}, '{mensagemf}' where id = {item['idIntegracao']}'''
-
-                        cursor_atualiza.execute(sql) 
-                        cursor_atualiza.execute("commit")
-
-                    sql = f'''UPDATE motor.controle_lotes set ids_atualizados = true where id = ?'''
-                    params = (lote.id)
-                    cursor_atualiza.execute(sql, params)
-                    cursor_atualiza.execute("commit")
-            cursor.close()
-            cursor_atualiza.close()
-    except Exception as e:
-        cursor.close()
-        cursor_atualiza.close()
-        print(f"Erro ao atualiza_retorno_lote_itens: {e}")
-        time.sleep(5)
-        atualiza_retorno_lote_itens()
-
 
 def criar_cursor(opcao):
     with open("Projeto_Migracao/config_banco.json", "r") as f:
@@ -575,7 +520,6 @@ def iniciar_extracao(**kwargs):
         cursor_origem.close()
 
     return True
-
 
 def iniciar_envios(**kwargs):
 

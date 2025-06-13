@@ -1,0 +1,1 @@
+select * from "Livro_Eletronico".listas_servicos where entidade_cloud_id is null
