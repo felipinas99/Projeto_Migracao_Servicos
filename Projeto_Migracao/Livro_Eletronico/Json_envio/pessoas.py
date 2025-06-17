@@ -8,13 +8,15 @@ def montar(lista, funcao):
             "pessoa": {
                 "celular": item.celular,
                 "eMail": item.email,
-                "inscricaoMunicipal": item.inscricao_municipal,
                 "nome": item.nome,
                 "nomeFantasia": item.nome_fantasia,
                 "telefone": item.telefone,
                 "tipoPessoa": item.tipo_pessoa
             }
         }
+
+        if item.inscricao_municipal != None:
+            dado["Pessoa"]["inscricaoMunicipal"] =  item.inscricao_municipal
 
         if item.tipo_pessoa == 'F':
             dado["pessoa"]["pessoaFisica"] = {
@@ -23,9 +25,10 @@ def montar(lista, funcao):
             
         if item.tipo_pessoa == 'J':
             dado["pessoa"]["pessoaJuridica"] = {
-                    "cnpj": item.cpf_cnpj,
                     "optanteSimples": item.optante_simples
                 }
+            if item.cpf_cnpj != None:
+                dado["pessoa"]["pessoaJuridica"]["cnpj"] = item.cpf_cnpj
 
         if item.enderecos != None:
             dado["pessoa"]["enderecos"] = [] 
@@ -42,6 +45,8 @@ def montar(lista, funcao):
                     "idPessoa": endereco['pessoa_cloud_id'],
                     # "idTipoEndereco": endereco['tipo_endereco_cloud_id']
                     })
+
+
 
         if funcao == 'Atualizar':
             dado["pessoa"]["idGerado"] = {"iPessoas": item.id_gerado}

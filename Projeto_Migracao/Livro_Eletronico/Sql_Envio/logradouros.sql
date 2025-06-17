@@ -1,1 +1,1 @@
-select * from "Livro_Eletronico".logradouros where id_gerado is null
+select * from "Livro_Eletronico".logradouros where atualizado is null and id_gerado is null

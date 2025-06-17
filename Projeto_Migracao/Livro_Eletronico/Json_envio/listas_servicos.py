@@ -14,7 +14,7 @@ def montar(lista, funcao):
                 "aliqFederal": item.aliq_federal,
                 "aliqEstadual": item.aliq_estadual,
                 "aliqMunicipal": item.aliq_municipal,
-                "versaoIbpt": item.versao_ibpt
+                # "versaoIbpt": item.versao_ibpt
             }
         }
 

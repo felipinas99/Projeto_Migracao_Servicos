@@ -61,7 +61,7 @@ FROM (
 ) p2
 WHERE p.id_gerado IS NULL
   AND p2.municipio_cloud_id = p.municipio_cloud_id
-  AND unaccent(lower(trim(p2.nome))) = unaccent(lower(trim(p.nome)));
+  AND public.unaccent(lower(trim(p2.nome))) = public.unaccent(lower(trim(p.nome)));
 END IF;
 
 -- bairros

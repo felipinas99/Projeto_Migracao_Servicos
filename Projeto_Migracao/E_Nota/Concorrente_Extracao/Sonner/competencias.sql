@@ -1,24 +1,24 @@
-select
-	row_number() over () as id
-	, year(tab.data_inicial) as exercicio
-	, cast(row_number() over () as char) as descricao
-	, tab.*
-from
-	(
-with recursive meses as (
-	select
-		DATE('1980-01-01') as data_inicio
-union all
-	select
-		DATE_ADD(data_inicio, interval 1 month)
-	from
-		meses
-	where
-		data_inicio < '2025-12-01'
-)
-	select
-		cast(data_inicio as char)as data_inicial
-		, cast(LAST_DAY(data_inicio)as char) as data_final
-		, cast(DATE_ADD(LAST_DAY(data_inicio), interval 1 month)as char) as  data_vencimento
-	from
-		meses) as tab
+SELECT
+    ROW_NUMBER() OVER () AS id,
+    YEAR(tab.data_inicial) AS exercicio,
+    DATE_FORMAT(tab.data_inicial, '%b/%Y') AS descricao,
+    tab.*
+FROM (
+    WITH RECURSIVE meses AS (
+        SELECT
+            DATE('1980-01-01') AS data_inicio
+        UNION ALL
+        SELECT
+            DATE_ADD(data_inicio, INTERVAL 1 MONTH)
+        FROM
+            meses
+        WHERE
+            data_inicio < '2025-12-01'
+    )
+    SELECT
+        data_inicio AS data_inicial,
+        LAST_DAY(data_inicio) AS data_final,
+        DATE_ADD(LAST_DAY(data_inicio), INTERVAL 1 MONTH) AS data_vencimento
+    FROM
+        meses
+) AS tab;

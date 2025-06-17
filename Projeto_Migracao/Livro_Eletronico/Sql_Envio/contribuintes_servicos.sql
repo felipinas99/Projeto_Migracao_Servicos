@@ -1,0 +1,1 @@
+select * from "Livro_Eletronico".contribuintes_servicos where id_gerado is null

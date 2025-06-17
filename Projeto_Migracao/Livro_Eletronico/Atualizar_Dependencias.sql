@@ -149,6 +149,78 @@ IF servico = 'contribuintes' THEN
 
 END IF;
 
+IF servico = 'contribuintes_servicos' THEN
+
+  -- Atualiza pessoa_cloud_id
+  UPDATE "Livro_Eletronico".contribuintes_servicos o
+  SET pessoa_cloud_id = cast(p.id_gerado->>'iPessoas' as int )
+  FROM "Livro_Eletronico".contribuintes p
+  WHERE p.id = o.pessoa_origem_id AND o.pessoa_cloud_id IS NULL AND o.id_gerado IS NULL;
+
+  -- Atualiza lista_servico_cloud_id
+  UPDATE "Livro_Eletronico".contribuintes_servicos o
+  SET lista_servico_cloud_id = p.id_gerado->>'iListasServicos'
+  FROM "Livro_Eletronico".listas_servicos p
+  WHERE p.id = o.lista_servico_origem_id AND o.lista_servico_cloud_id IS NULL AND o.id_gerado IS NULL;
+
+  -- Atualiza cnae_cloud_id
+  -- UPDATE "Livro_Eletronico".contribuintes_servicos o
+  -- SET cnae_cloud_id = p.id_gerado
+  -- FROM "Livro_Eletronico".cnaes p
+  -- WHERE p.id = o.cnae_origem_id AND o.cnae_cloud_id IS NULL AND o.id_gerado IS  NULL;
+
+END IF;
+
+if servico = 'contribuintes_mov_optante' then
+  UPDATE "Livro_Eletronico".contribuintes_mov_optante o
+  SET pessoa_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".pessoas p
+  WHERE p.id = o.pessoa_origem_id AND o.pessoa_cloud_id IS NULL AND o.id_gerado IS NULL;
+end if;
+
+
+IF servico = 'guias' THEN
+  -- Atualiza pessoa_cloud_id
+  UPDATE "Livro_Eletronico".guias o
+  SET pessoa_cloud_id = cast(p.id_gerado->>'iPessoas' as int )
+  FROM "Livro_Eletronico".contribuintes p
+  WHERE p.id = o.pessoa_origem_id AND o.pessoa_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
+
+  -- Atualiza competencia_cloud_id
+  UPDATE "Livro_Eletronico".guias o
+  SET competencia_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".competencias p
+  WHERE p.id = o.competencia_origem_id AND o.competencia_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
+  UPDATE "Livro_Eletronico".guias n
+  SET competencia_cloud_id = c.id_gerado
+  FROM "Livro_Eletronico".competencias c
+  WHERE n.competencia_descricao BETWEEN c.data_inicial AND c.data_final
+    AND n.competencia_cloud_id IS NULL
+    AND competencia_descricao IS NOT NULL
+    AND n.id_gerado IS NULL;
+
+END IF;
+
+
+IF servico = 'declarados' THEN
+
+  -- Atualiza pessoa_cloud_id
+  UPDATE "Livro_Eletronico".declarados o
+  SET pessoa_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".contribuintes p
+  WHERE p.id = o.pessoa_origem_id AND o.pessoa_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
+
+  -- Atualiza municipio_cloud_id
+  UPDATE "Livro_Eletronico".declarados o
+  SET municipio_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".municipios p
+  WHERE p.id = o.municipio_origem_id AND o.municipio_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
+END IF;
+
 
 RETURN true;
 END;

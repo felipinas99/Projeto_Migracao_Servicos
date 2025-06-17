@@ -1,0 +1,1 @@
+select * from "Livro_Eletronico".tomadores_prestadores where id_gerado is null

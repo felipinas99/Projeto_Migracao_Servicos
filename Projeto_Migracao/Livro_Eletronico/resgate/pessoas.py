@@ -16,3 +16,9 @@ def atualiza_registro_lote(lote,cursor_resgate):
                 and id_gerado is null '''
                 params = (registro['idGerado']['iPessoas'], registro['pessoaFisica']['cpf'])
                 cursor_resgate.execute(sql, params)
+         
+        sql = '''Update "Livro_Eletronico".pessoas set id_gerado = ? 
+        where public.unaccent(trim(lower(nome))) ilike public.unaccent(trim(lower(?))) 
+        and id_gerado is null '''
+        params = (registro['idGerado']['iPessoas'], registro['nome'])
+        cursor_resgate.execute(sql, params)

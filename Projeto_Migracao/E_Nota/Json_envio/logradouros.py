@@ -12,6 +12,6 @@ def montar(lista, funcao):
         }
 
         if funcao == 'Atualizar':
-            dado["logradouros"]["idGerado"]["id"] = dado.id_gerado
+            dado["logradouros"]["idGerado"] = {"id":item.id_gerado}
         retorno.append(dado)
     return retorno

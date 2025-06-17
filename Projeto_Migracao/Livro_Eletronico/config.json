@@ -1,59 +1,80 @@
 {
     "servicos": [
-    {
-        "nome": "pessoas",
-        "servico": "pessoas",
-        "tabela": "pessoas"
-    },
-    {
-        "nome": "estados",
-        "servico": "estados",
-        "tabela": "estados"
-    },
-    {
-        "nome": "municipios",
-        "servico": "municipios",
-        "tabela": "municipios"
-    },
-    {
-        "nome": "bairros",
-        "servico": "bairros",
-        "tabela": "bairros"
-    },
-    {
-        "nome": "logradouros",
-        "servico": "logradouros",
-        "tabela": "logradouros"
-    },
-    {
-        "nome": "pessoas_enderecos",
-        "servico": "pessoas_enderecos",
-        "tabela": "pessoas_enderecos"
-    },
-    {
-        "nome": "competencias",
-        "servico": "competencias",
-        "tabela": "competencias"
-    },
-    {
-        "nome": "indexadores",
-        "servico": "indexadores",
-        "tabela": "indexadores"
-    },
-    {
-        "nome": "indexadores_valores",
-        "servico": "indexadoresvalores",
-        "tabela": "indexadores_valores"
-    },
-    {
-        "nome": "contribuintes",
-        "servico": "contribuintes",
-        "tabela": "contribuintes"
-    },
-    {
-        "nome": "listas_servicos",
-        "servico": "listasservicos",
-        "tabela": "listas_servicos"
-    }
-]
+        {
+            "nome": "pessoas",
+            "servico": "pessoas",
+            "tabela": "pessoas"
+        },
+        {
+            "nome": "estados",
+            "servico": "estados",
+            "tabela": "estados"
+        },
+        {
+            "nome": "municipios",
+            "servico": "municipios",
+            "tabela": "municipios"
+        },
+        {
+            "nome": "bairros",
+            "servico": "bairros",
+            "tabela": "bairros"
+        },
+        {
+            "nome": "logradouros",
+            "servico": "logradouros",
+            "tabela": "logradouros"
+        },
+        {
+            "nome": "pessoas_enderecos",
+            "servico": "pessoas_enderecos",
+            "tabela": "pessoas_enderecos"
+        },
+        {
+            "nome": "competencias",
+            "servico": "competencias",
+            "tabela": "competencias"
+        },
+        {
+            "nome": "indexadores",
+            "servico": "indexadores",
+            "tabela": "indexadores"
+        },
+        {
+            "nome": "indexadores_valores",
+            "servico": "indexadoresvalores",
+            "tabela": "indexadores_valores"
+        },
+        {
+            "nome": "contribuintes",
+            "servico": "contribuintes",
+            "tabela": "contribuintes"
+        },
+        {
+            "nome": "listas_servicos",
+            "servico": "listasservicos",
+            "tabela": "listas_servicos"
+        },
+        {
+            "nome": "contribuintes_servicos",
+            "servico": "contribuintesservicos",
+            "tabela": "contribuintes_servicos"
+        },
+        {
+            "nome": "contribuintes_mov_optante",
+            "servico": "contribuintesmovoptante",
+            "tabela": "contribuintes_mov_optante"
+        },
+        {
+            "nome": "guias",
+            "servico": "guias",
+            "tabela": "guias"
+        },
+        {
+            "nome": "tomadores_prestadores",
+            "servico": "tomadores_prestadores",
+            "tabela": "tomadores_prestadores"
+        }
+    ]
+
 }

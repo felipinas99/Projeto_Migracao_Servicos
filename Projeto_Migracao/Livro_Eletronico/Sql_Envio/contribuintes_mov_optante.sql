@@ -1,0 +1,1 @@
+select * from "Livro_Eletronico".contribuintes_mov_optante where id_gerado is null

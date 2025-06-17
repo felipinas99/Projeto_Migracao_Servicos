@@ -4,6 +4,9 @@ select
 	, '25.1.F' as versao_ibpt
 	, case when aliquota is null then 0 else TRUNCATE(aliquota,4) end as aliquota
 -- 	, null as listas_servicos_leis_cloud_id
+	, 0 as aliq_estadual
+	, 0 as aliq_federal
+	, case when aliquota is null then 0 else TRUNCATE(aliquota,2) end as aliq_municipal
 	, 11865 as entidade_cloud_id
 from
 	t_grupoatividade
@@ -14,6 +17,9 @@ select
 	, '25.1.F' as versao_ibpt
 	, case when tg.aliquota is null then 0 else TRUNCATE(tg.aliquota,4) end as aliquota
 -- 	, 3 as listas_servicos_leis_cloud_id
+	, 0 as aliq_estadual
+	, 0 as aliq_federal
+	, case when tg.aliquota is null then 0 else TRUNCATE(tg.aliquota,2) end  as aliq_municipal
 	, 11865 as entidade_cloud_id
 from
 	t_atividade tg
