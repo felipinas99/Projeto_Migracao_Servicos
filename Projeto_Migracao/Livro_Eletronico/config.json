@@ -72,8 +72,18 @@
         },
         {
             "nome": "tomadores_prestadores",
-            "servico": "tomadores_prestadores",
+            "servico": "tomadoresprestadores",
             "tabela": "tomadores_prestadores"
+        },
+        {
+            "nome": "declaracoes",
+            "servico": "declaracoes",
+            "tabela": "declaracoes"
+        },
+        {
+            "nome": "declaracoes_df",
+            "servico": "declaracoesdf",
+            "tabela": "declaracoes_df"
         }
     ]
 

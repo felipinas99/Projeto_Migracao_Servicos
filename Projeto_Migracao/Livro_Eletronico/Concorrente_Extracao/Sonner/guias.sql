@@ -14,7 +14,7 @@
 	, coalesce(valorBaixaCorrecao, correcao)  as vl_correcao
 	, coalesce(valorBaixaDesconto, 0) as vl_desconto
 	, case
-			when dataCancelamento is not null then 'C'
+		when dataCancelamento is not null then 'C'
 		when tg.inscritaDividaAtiva = 1 then 'T'
 		when dataBaixa is not null then 'P'
 		else 'A'

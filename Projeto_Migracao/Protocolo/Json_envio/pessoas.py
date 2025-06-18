@@ -4,13 +4,12 @@ def montar(lista, funcao):
         dado = {
             "idIntegracao": item.id,
             "pessoas": {
-                "codigo": item.id,
-                "nome": item.nome,
-			    "tipoPessoa": "FISICA"
+                "codigoMunicipio":item.municipio_cloud_id,
+                "nome": item.nome
             }
         }
-        if funcao == 'ATUALIZAR':
-            dado["conteudo"]["id"] = dado.id_gerado
-            dado["idGerado"] = dado.id_gerado
+
+        if funcao == 'Atualizar':
+            dado["pessoas"]["idGerado"] = {"id": item.id_gerado}
         retorno.append(dado)
     return retorno

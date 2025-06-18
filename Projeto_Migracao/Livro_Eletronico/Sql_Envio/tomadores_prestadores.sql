@@ -1,1 +1,1 @@
-select * from "Livro_Eletronico".tomadores_prestadores where id_gerado is null
+select * from "Livro_Eletronico".tomadores_prestadores where pessoa_cloud_id is not null id_gerado is null

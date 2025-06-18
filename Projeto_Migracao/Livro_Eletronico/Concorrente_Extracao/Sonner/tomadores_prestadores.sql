@@ -33,7 +33,7 @@ select
 		when length(inscMun) < 2 then null
 		else inscMun
 	end as inscricao_municipal
-	, email as email
+	, cast(email as char(80)) as email
 	, case when sp.id is not null then 'S' else 'N' end as optante_sn
 from
 	andradas.t_pessoa tp
