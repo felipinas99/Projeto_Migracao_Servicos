@@ -16,7 +16,10 @@ def montar(lista, funcao):
         }
 
         if item.inscricao_municipal != None:
-            dado["Pessoa"]["inscricaoMunicipal"] =  item.inscricao_municipal
+            dado["pessoa"]["inscricaoMunicipal"] =  item.inscricao_municipal
+
+        if item.inscricao_estadual != None:
+            dado["pessoa"]["inscricaoEstadual"] =  item.inscricao_estadual
 
         if item.tipo_pessoa == 'F':
             dado["pessoa"]["pessoaFisica"] = {

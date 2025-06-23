@@ -36,6 +36,16 @@
             "tabela": "competencias"
         },
         {
+            "nome": "series",
+            "servico": "series",
+            "tabela": "series"
+        },
+        {
+            "nome": "contadores",
+            "servico": "contadores",
+            "tabela": "contadores"
+        },
+        {
             "nome": "indexadores",
             "servico": "indexadores",
             "tabela": "indexadores"
@@ -84,6 +94,11 @@
             "nome": "declaracoes_df",
             "servico": "declaracoesdf",
             "tabela": "declaracoes_df"
+        },
+        {
+            "nome": "declaracoes_df_itens",
+            "servico": "declaracoesdfitens",
+            "tabela": "declaracoes_df_itens"
         }
     ]
 

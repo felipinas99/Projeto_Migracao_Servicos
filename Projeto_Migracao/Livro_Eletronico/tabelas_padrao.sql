@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS "Livro_Eletronico".pessoas (
     codigo VARCHAR,
     tipo_pessoa VARCHAR,
     inscricao VARCHAR,
+    celular VARCHAR,
+    telefone VARCHAR,
     inscricao_municipal VARCHAR,
     inscricao_estadual VARCHAR,
     nome VARCHAR,
@@ -120,6 +122,15 @@ CREATE TABLE IF NOT EXISTS "Livro_Eletronico".competencias (
     data_final date,
     data_vencimento VARCHAR,
     entidade_cloud_id VARCHAR,
+    id_gerado int,
+    mensagem text,
+    atualizado varchar
+);
+
+CREATE TABLE IF NOT EXISTS "Livro_Eletronico".series (
+    id INT PRIMARY KEY,
+    descricao VARCHAR,
+    ativa VARCHAR,
     id_gerado int,
     mensagem text,
     atualizado varchar
@@ -419,6 +430,52 @@ CREATE TABLE IF NOT EXISTS "Livro_Eletronico".declaracoes_df (
     mensagem TEXT,
     atualizado VARCHAR
 );
+
+
+CREATE TABLE IF NOT EXISTS "Livro_Eletronico".declaracoes_df_itens (
+    id INT PRIMARY KEY,
+    declaracao_origem_id INT,
+    declaracao_cloud_id INT,
+    documento_origem_id INT,
+    documento_cloud_id INT,
+    lista_servico_origem_id INT,
+    lista_servico_cloud_id INT,
+    sequencia_origem_id INT,
+    sequencia_cloud_id INT,
+    cnae_origem_id INT,
+    cnae_cloud_id INT,
+    municipio_origem_id INT,
+    municipio_cloud_id INT,
+    incentivo_fiscal_origem_id INT,
+    incentivo_fiscal_cloud_id INT,
+    servico_no_pais VARCHAR,
+    nome_municipio VARCHAR,
+    descricao_servico VARCHAR,
+    qtd_servico VARCHAR,
+    vl_unitario VARCHAR,
+    vl_servico VARCHAR,
+    vl_deducao VARCHAR,
+    vl_desc_incondicional VARCHAR,
+    vl_desc_condicional VARCHAR,
+    vl_base_calculo VARCHAR,
+    aliquota VARCHAR,
+    vl_iss VARCHAR,
+    vl_taxas VARCHAR,
+    id_gerado INT,
+    mensagem TEXT,
+    atualizado VARCHAR
+);
+
+CREATE TABLE IF NOT EXISTS "Livro_Eletronico".contadores (
+    id INT PRIMARY KEY,
+    inscricao varchar,
+    crc varchar,
+    id_gerado INT,
+    mensagem TEXT,
+    atualizado VARCHAR
+);
+
+
 
 
 commit;

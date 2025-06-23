@@ -1,0 +1,1 @@
+select * from "Livro_Eletronico".series where id_gerado is null

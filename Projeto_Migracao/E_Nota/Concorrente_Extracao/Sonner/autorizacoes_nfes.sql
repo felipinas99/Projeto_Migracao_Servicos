@@ -16,12 +16,12 @@ select
 	, aprovador_id
 	, motivoDeferimento
 from
-		t_solicitacao s
+	t_solicitacao s
 left join t_pessoa tp on
-		tp.id = s.contribuinte_id
+	tp.id = s.contribuinte_id
 left join t_documento td on
 	td.id = s.documento_id
 where
-		tp.prestador = 1
+	tp.prestador = 1
 	and tipo = 'ANFE'
-		and s.id = 1611354
+	and s.id = 1611354

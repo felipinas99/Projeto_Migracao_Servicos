@@ -13,6 +13,7 @@ group by 2
 select
 	tp.id
 	, tp.id pessoa_origem_id
+	, tp.contadorResponsavel_id as contador_origem_id
 	, case
 		when tr.tipo = 'Faturamento' then 'H'
 		when tr.tipo = 'Estimativa' then 'E'

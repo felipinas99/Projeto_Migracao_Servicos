@@ -124,10 +124,10 @@ IF servico = 'contribuintes' THEN
   WHERE p.id = o.pessoa_origem_id AND o.pessoa_cloud_id IS NULL AND o.id_gerado IS  NULL;
 
   -- Atualiza contador_cloud_id
-  -- UPDATE "Livro_Eletronico".contribuintes o
-  -- SET contador_cloud_id = p.id_gerado
-  -- FROM "Livro_Eletronico".contadores p
-  -- WHERE p.id = o.contador_origem_id AND o.contador_cloud_id IS NULL AND o.id_gerado IS  NULL;
+  UPDATE "Livro_Eletronico".contribuintes o
+  SET contador_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".contadores p
+  WHERE p.id = o.contador_origem_id AND o.contador_cloud_id IS NULL AND o.id_gerado IS  NULL;
 
   -- Atualiza tipo_cloud_id
   -- UPDATE "Livro_Eletronico".contribuintes o
@@ -264,10 +264,16 @@ IF servico = 'declaracoes_df' THEN
   -- WHERE p.id = o.projeto_origem_id AND o.projeto_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
 
   -- Atualiza serie_cloud_id
-  -- UPDATE "Livro_Eletronico".declaracoes_df o
-  -- SET serie_cloud_id = p.id_gerado
-  -- FROM "Livro_Eletronico".series p
-  -- WHERE p.id = o.serie_origem_id AND o.serie_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+  UPDATE "Livro_Eletronico".declaracoes_df o
+  SET serie_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".series p
+  WHERE p.id = o.serie_origem_id AND o.serie_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
+  UPDATE "Livro_Eletronico".declaracoes_df o
+  SET serie_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".series p
+  WHERE p.descricao = o.serie_descricao AND o.serie_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
 
   -- Atualiza arquivo_cloud_id
   -- UPDATE "Livro_Eletronico".declaracoes_df o
@@ -307,6 +313,52 @@ IF servico = 'declaracoes_df' THEN
 
 END IF;
 
+IF servico = 'declaracoes_df_itens' THEN
+
+  -- Atualiza declaracao_cloud_id
+  UPDATE "Livro_Eletronico".declaracoes_df_itens o
+  SET declaracao_cloud_id = cast(p.id_gerado->>'iDeclaracoes' as int )
+  FROM "Livro_Eletronico".declaracoes_df p
+  WHERE p.id = o.declaracao_origem_id AND o.declaracao_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
+  
+  UPDATE "Livro_Eletronico".declaracoes_df_itens o
+  SET documento_cloud_id = cast(p.id_gerado->>'iDocumentos' as int )
+  FROM "Livro_Eletronico".declaracoes_df p
+  WHERE p.id = o.documento_origem_id AND o.documento_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
+
+  -- Atualiza lista_servico_cloud_id
+  UPDATE "Livro_Eletronico".declaracoes_df_itens o
+  SET lista_servico_cloud_id = cast(p.id_gerado->>'iListasServicos' as int )
+  FROM "Livro_Eletronico".listas_servicos p
+  WHERE p.id = o.lista_servico_origem_id AND o.lista_servico_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
+  -- Atualiza sequencia_cloud_id
+  -- UPDATE "Livro_Eletronico".declaracoes_df_itens o
+  -- SET sequencia_cloud_id = p.id_gerado
+  -- FROM "Livro_Eletronico".sequencias p
+  -- WHERE p.id = o.sequencia_origem_id AND o.sequencia_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
+  -- Atualiza cnae_cloud_id
+  -- UPDATE "Livro_Eletronico".declaracoes_df_itens o
+  -- SET cnae_cloud_id = p.id_gerado
+  -- FROM "Livro_Eletronico".cnaes p
+  -- WHERE p.id = o.cnae_origem_id AND o.cnae_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
+  -- Atualiza municipio_cloud_id
+  UPDATE "Livro_Eletronico".declaracoes_df_itens o
+  SET municipio_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".municipios p
+  WHERE p.id = o.municipio_origem_id AND o.municipio_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
+  -- Atualiza incentivo_fiscal_cloud_id
+  -- UPDATE "Livro_Eletronico".declaracoes_df_itens o
+  -- SET incentivo_fiscal_cloud_id = p.id_gerado
+  -- FROM "Livro_Eletronico".incentivos_fiscais p
+  -- WHERE p.id = o.incentivo_fiscal_origem_id AND o.incentivo_fiscal_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+
+END IF;
 
 RETURN true;
 END;

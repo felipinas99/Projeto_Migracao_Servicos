@@ -1,0 +1,1 @@
+select * from "Livro_Eletronico".contadores where id_gerado is null
