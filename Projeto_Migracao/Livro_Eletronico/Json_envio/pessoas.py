@@ -1,4 +1,3 @@
-
 def montar(lista, funcao):
     import json
     retorno = []

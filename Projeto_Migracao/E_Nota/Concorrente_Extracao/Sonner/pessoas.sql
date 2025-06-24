@@ -34,6 +34,14 @@ select
 		else inscMun
 	end as inscricao_municipal
 	, case
+		when length(inscEst) < 2 then null
+		when length(inscEst) > 15 then null
+		when lower(inscEst) not like '%isen%' then null
+		when lower(inscEst) not like '%infor%' then null
+		when length(inscEst) > 15 then null
+		else inscEst
+	end as inscricao_estadual
+	, case
 		when tr.tipo = 'Faturamento' then 'HOMOLOGADO'
 		when tr.tipo = 'Estimativa' then 'ESTIMADO'
 		when tr.tipo = 'Simples' then 'HOMOLOGADO'

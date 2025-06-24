@@ -24,11 +24,6 @@
             "nome": "logradouros",
             "servico": "logradouros",
             "tabela": "logradouros"
-        },
-        {
-            "nome": "pessoas_enderecos",
-            "servico": "pessoas_enderecos",
-            "tabela": "pessoas_enderecos"
         }
     ]
 

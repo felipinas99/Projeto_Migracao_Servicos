@@ -29,12 +29,16 @@ def montar(lista, funcao):
 
         if item.inscricao !=None:
             dado["pessoas"]["inscricao"] = item.inscricao
+
         if item.inscricao_municipal != None:
             dado["pessoas"]["inscricaoMunicipal"] = item.inscricao_municipal
+
         if item.inscricao_estadual != None:
             dado["pessoas"]["inscricaoEstadual"] = item.inscricao_estadual
+
         if item.situacao_economico != None:
             dado["pessoas"]["situacaoEconomico"] = item.situacao_economico
+            
         if item.modalidade_iss != None:
             dado["pessoas"]["modalidadeIss"] = item.modalidade_iss
 

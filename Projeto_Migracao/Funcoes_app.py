@@ -142,13 +142,15 @@ def abrir_parametros():
         "https://nota-eletronica.betha.cloud/service-layer/api/",
         "http://e-gov.betha.com.br/glb/service-layer/v2/api/",
         "https://iss.betha.cloud/service-layer-arrecadacao/api/",
-        "https://livroeletronico.betha.cloud/livro-eletronico2/service-layer-livro/api/"
+        "https://livroeletronico.betha.cloud/livro-eletronico2/service-layer-livro/api/",
+        "https://api.protocolo.betha.cloud/protocolo/service-layer/v1/api/"
     ]
     opcoes_url_lote = [
-        "https://nota-eletronica.betha.cloud/service-layer/api/consulta/",
+        "https://nota-eletronica.betha.cloud/service-layer/api/consulta/",  
         "http://e-gov.betha.com.br/glb/service-layer/v2/api/lotes/",
         "https://iss.betha.cloud/service-layer-arrecadacao/api/indexadores/",
         "https://livroeletronico.betha.cloud/livro-eletronico2/service-layer-livro/api/declaracoes/",
+        "https://api.protocolo.betha.cloud/protocolo/service-layer/v1/api/processos/lotes/"
     ]
 
     configuracoes = carregar_dados_tabela('parametros')
