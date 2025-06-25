@@ -269,10 +269,10 @@ IF servico = 'declaracoes_df' THEN
   FROM "Livro_Eletronico".series p
   WHERE p.id = o.serie_origem_id AND o.serie_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
 
-  UPDATE "Livro_Eletronico".declaracoes_df o
-  SET serie_cloud_id = p.id_gerado
-  FROM "Livro_Eletronico".series p
-  WHERE p.descricao = o.serie_descricao AND o.serie_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+  -- UPDATE "Livro_Eletronico".declaracoes_df o
+  -- SET serie_cloud_id = p.id_gerado
+  -- FROM "Livro_Eletronico".series p
+  -- WHERE p.descricao = o.serie_descricao AND o.serie_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
 
 
   -- Atualiza arquivo_cloud_id
@@ -330,7 +330,7 @@ IF servico = 'declaracoes_df_itens' THEN
 
   -- Atualiza lista_servico_cloud_id
   UPDATE "Livro_Eletronico".declaracoes_df_itens o
-  SET lista_servico_cloud_id = cast(p.id_gerado->>'iListasServicos' as int )
+  SET lista_servico_cloud_id = cast(p.id_gerado->>'iListasServicos' as varchar )
   FROM "Livro_Eletronico".listas_servicos p
   WHERE p.id = o.lista_servico_origem_id AND o.lista_servico_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
 

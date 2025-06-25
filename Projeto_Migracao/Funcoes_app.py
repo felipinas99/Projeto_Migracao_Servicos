@@ -9,9 +9,10 @@ import threading
 
 from Projeto_Migracao.utilitario.Funcoes import criar_cursor
 
-config_file = "Projeto_Migracao/config_banco.json"
+# config_file = "Projeto_Migracao/config_banco.json"
 
-
+current_dir = os.path.dirname(os.path.abspath(__file__))
+config_file = os.path.join(current_dir, "config_banco.json")
 
 def criar_rotulo(janela, texto, tamanho=14):
     rotulo = ttk.Label(janela, text=texto, font=("Helvetica", tamanho))

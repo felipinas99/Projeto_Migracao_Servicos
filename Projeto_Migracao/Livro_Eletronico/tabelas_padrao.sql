@@ -439,7 +439,7 @@ CREATE TABLE IF NOT EXISTS "Livro_Eletronico".declaracoes_df_itens (
     documento_origem_id INT,
     documento_cloud_id INT,
     lista_servico_origem_id INT,
-    lista_servico_cloud_id INT,
+    lista_servico_cloud_id varchar,
     sequencia_origem_id INT,
     sequencia_cloud_id INT,
     cnae_origem_id INT,
