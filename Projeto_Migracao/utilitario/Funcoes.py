@@ -1,6 +1,6 @@
 import json, requests, pyodbc, os, time, importlib, sqlparse, sys,  csv , psycopg2 , tempfile, os,concurrent.futures
 
-def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
+def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver, app):
     conn_str = (
         f'DRIVER={driver};'
         f'UID={usuario};'
@@ -8,6 +8,7 @@ def iniciarCursorGeneric(host, banco_dados, porta, usuario, senha, driver):
         f'Database={banco_dados};'
         f'Server={host};'
         f'Port={porta};'
+        f'APP={app};'
         f'ClientEncoding=UTF8;'
         # f'MARS_Connection=yes;' 
     )
@@ -315,7 +316,8 @@ def criar_cursor(opcao):
                             porta=conf["PORT"],
                             usuario=conf["UID"],
                             senha=conf["PWD"],
-                            driver=conf["DRIVER"])
+                            driver=conf["DRIVER"],
+                            app=conf["APP"])
     return cursor
 
 def colunas_sql(cursor, sql):

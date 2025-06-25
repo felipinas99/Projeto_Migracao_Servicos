@@ -1,0 +1,1 @@
+select i_pessoas as id, nome  from bethadba.pessoas
