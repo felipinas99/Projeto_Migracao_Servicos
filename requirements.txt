@@ -3,10 +3,6 @@ psycopg2
 Requests
 sqlparse
 ttkbootstrap
-threading
-os
-sys
 json
-time
 importlib
 tempfile
