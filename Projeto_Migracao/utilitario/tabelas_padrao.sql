@@ -22,18 +22,26 @@ CREATE TABLE if not exists controle_lotes (
     servico VARCHAR,  
     metodo metodo,
     lote_envio JSONB,
-    status_envio status_lote_envio,
+    status_envio status_lote_envio DEFAULT 'NAO_ENVIADO',
     lote_envio_retorno JSONB,
     lote_id  varchar,
-    lote_recebido JSONB ,
+    lote_recebido JSONB,
     ids_atualizados BOOLEAN DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS parametros (
     id SERIAL PRIMARY KEY,  
-    tipo_parametro VARCHAR PRIMARY KEY,
+    tipo_parametro VARCHAR UNIQUE,
     valor VARCHAR
 );
+
+INSERT INTO motor.parametros (tipo_parametro, valor) VALUES
+    ('Token',        '1'),
+    ('Sistema',      'Livro_Eletronico'),
+    ('Concorrente',  'Sonner'),
+    ('Url_Base',     'https://livroeletronico.betha.cloud/livro-eletronico2/service-layer-livro/api/'),
+    ('Url_Lote',     'https://livroeletronico.betha.cloud/livro-eletronico2/service-layer-livro/api/declaracoes/'),
+    ('Entidade',     '1');
 
 
 

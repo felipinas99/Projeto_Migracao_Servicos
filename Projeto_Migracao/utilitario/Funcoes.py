@@ -30,25 +30,6 @@ def iniciarCursorPostgresql(host, banco_dados, porta, usuario, senha):
     except Exception as e:
         print(f"Erro ao conectar ao banco de dados: {e}")
 
-def iniciarCursorSybase(dsn, usuario, senha, app="APP=BTLS=V2Y7Uq9RxaIfCU87u8ugNIW+/03ctxUc6nfxu9n2Qu9omwxmbQccTa3e2zujHW+PFBkBuXBQPnwIDpKrTdNusi811gsL3cvJ/vOOYqOAA5rqDBz4AElLxstkQXonzuc9twe54bkelHF2DpZj4B8M6NmHM4v2RO6PCuRH/fTqFAA=", driver ="SQL Anywhere 16"):
-    
-    stringCon = 'DRIVER=' + driver + ';SERVER=' + dsn  + ';DSN=' + dsn + ';Uid=' + usuario + ';Pwd=' + senha + ';Encrypt=yes;Connection Timeout=30;APP='+ app +';'
-    qtd_try = 0
-    conn = None
-    while not conn:
-        qtd_try += 1
-        try:
-            conn = pyodbc.connect(stringCon)
-        except Exception as i:
-            print(i)
-        
-        if qtd_try > 20:
-            print("Erro crítico ao conectar com banco de dados. Abortando execução...")
-            exit()
-    cursor = conn.cursor()
-
-    return cursor        
-
 def busca_parametro(parametro):
     cursor = criar_cursor('destino')
     cursor.execute(f'''select * from motor.parametros where tipo_parametro = '{parametro}' ''')
@@ -308,7 +289,14 @@ def atualiza_retorno_lote_itens():
         atualiza_retorno_lote_itens()
 
 def criar_cursor(opcao):
-    with open("Projeto_Migracao/config_banco.json", "r") as f:
+
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    config_file = os.path.join(parent_dir, "config_banco.json")
+
+
+    with open(config_file, "r") as f:
         config = json.load(f)
     conf = config[opcao]
     cursor = iniciarCursorGeneric(banco_dados=conf["DATABASE"],
@@ -337,7 +325,10 @@ def colunas_sql(cursor, sql):
 
 def execute_sql_extracao(cursor_extracao, sql, tabela):
 
-    with open("Projeto_Migracao/config_banco.json", "r") as f:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    config_file = os.path.join(parent_dir, "config_banco.json")
+    with open(config_file, "r") as f:
         config = json.load(f)
     conf = config['destino']
 
