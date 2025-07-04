@@ -35,8 +35,6 @@ def cria_janela(titulo):
     janela.state('zoomed')  # Maximiza a janela
     return janela
 
-
-
 def cria_frame_tabela():
     configurar_banco_janela = ttk.Toplevel()  # Usando ttkbootstrap para criar a janela
     configurar_banco_janela.title("Configurar Banco")
@@ -65,7 +63,6 @@ def cria_frame_tabela():
         bootstyle="info",
     )
     tabela.pack( fill="both", expand=True)
-
 
 def salvar_configuracao(campos,campos_origem, campos_destino):
     config = {
@@ -250,7 +247,6 @@ def atualizar_tabela_periodicamente(tree, intervalo=2):
         while True:
             # Consulta ao banco em thread separada
             try:
-                from Projeto_Migracao.utilitario.Funcoes import criar_cursor
                 cursor = criar_cursor('destino')
                 cursor.execute('''
                     select 'Pendentes Envio' as descricao , metodo::text,tipo_registro,count(*) from motor.lotes_pendentes_envio lpe  group by 1,2,3

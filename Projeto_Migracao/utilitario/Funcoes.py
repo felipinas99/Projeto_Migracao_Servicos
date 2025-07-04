@@ -104,7 +104,8 @@ def postagem():
             cursor_atualiza = criar_cursor('destino')
             token  = busca_parametro('Token')
             url = busca_parametro('Url_Base')
-            cursor.execute('select * from motor.lotes_pendentes_envio')
+            sistema = busca_parametro('Sistema')
+            cursor.execute('select * from motor.lotes_pendentes_envio where sistema = ? order by 1 asc', sistema)
             while True:
                 lista = cursor.fetchmany(50)
                 if not lista:
@@ -318,7 +319,7 @@ def colunas_sql(cursor, sql):
 
     
     fim = time.time()  # Fim da contagem do tempo
-    print(f"Tempo de execução: {fim - inicio:.2f} segundos")
+    print(f"Tempo de Extracao de dados: {fim - inicio:.2f} segundos")
 
 
     return colunas, linhas
@@ -385,7 +386,7 @@ def execute_sql_extracao(cursor_extracao, sql, tabela):
     
     end_time = time.time()
     elapsed_time = end_time - start_time
-    print(f"Tempo decorrido: {elapsed_time} segundos")
+    print(f"Tempo insercao/atualizacao na tabela destino {tabela}: {elapsed_time} segundos")
 
 def procura_montagem(nome_arquivo, pasta):
     sistema = busca_parametro('Sistema')
@@ -415,7 +416,7 @@ def get_unitario(url, headers, sistema):
 
         match sistema:
             case 'Protocolo':
-                if result == []:
+                if result['content'] == []:
                     return result, False
             case 'Livro_Eletronico':
                 if result['conteudo'] == []:
@@ -469,7 +470,7 @@ def atualiza_dependencias_tabela_controle(servico,sistema):
         cursor_destino.execute("commit;")
 
     except Exception as e:
-        print(f"Erro ao executar a resgate: {e}")
+        print(f"Erro ao executar a atualizacao de dependencias de tabelas: {e}")
         return False
     finally:
         cursor_destino.close()
