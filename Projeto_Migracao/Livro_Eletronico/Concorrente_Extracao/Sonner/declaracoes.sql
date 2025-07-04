@@ -1,7 +1,6 @@
 select 
 	 te.id
 	, concat(te.ano, '-', case when te.mes + 1 < 10 then concat('0', te.mes + 1) else te.mes + 1 end, '-', '01') competencia_descricao
--- 	, guia_id
 	, case
 		when papel = 'prestador' then 'P'
 		when papel = 'tomador' then 'T'
@@ -9,6 +8,7 @@ select
 	, td.contribuinte_id as pessoa_origem_id
 	, te.ano as ano_cloud_id
 	, case
+		when td.dataCancelamento is not null then 'C'
 		when tipo = 'Regular' then 'E'
 		when tipo = 'SemMovimento' then 'S'
 		when tipo = 'Complementar' then 'E'
@@ -27,19 +27,14 @@ select
 		else  'N'
 	end as situacao_guia
 	, qtdNFe as qtd_documentos
--- 	, valorEncerrado as vl_documento
 	, valorDevido as vl_documento
 	, valorDevido as vl_servico
 	, valorDevido as vl_imposto_guia
 	, valorDevido as vl_servico_simplificada
 	, 0 as vl_deducao
--- 	, qtdEscrit
--- 	, totalEscrit
--- 	, totalNFe
--- 	, totalRecebido
-	, totalImposto as vl_imposto
-	, totalImposto as vl_imposto_simplificada
-	, totalFaturado as vl_base_calculo
+	, case when td.dataCancelamento is not null then 0 else totalImposto end as vl_imposto
+	, case when td.dataCancelamento is not null then 0 else totalImposto end as vl_imposto_simplificada
+	, case when td.dataCancelamento is not null then 0 else  totalFaturado end as vl_base_calculo
 from
 	t_encerramento te
 left join t_documento td on

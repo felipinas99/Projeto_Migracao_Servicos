@@ -1,27 +1,26 @@
 select
 	tn.id as id
-	, retencaoINSS as vl_inss
-	, retencaoIRRF as vl_ir
-	, retencaoPIS as vl_pis
-	, retencaoCOFINS as vl_cofins
-	, retencaoCSLL as vl_csll
-	, case when descontoCondicional is null then 0 else descontoCondicional end as vl_total_descontos_condicionados
-	, case when descontoIncondicional is null then 0 else descontoIncondicional end as vl_total_descontos_incondicionados
-	, case when outrasDeducoes is null then 0 else outrasDeducoes end as vl_total_deducoes
-	, case when outrasRetencoes is null then 0 else outrasRetencoes end as vl_outras_retencoes
-	, case when valorTotal is null then 0 else valorTotal end vl_total_servicos
-	, case when valorTotal is null then 0 else valorTotal end vl_total_base_calculo
-	, case when valorImposto is null then 0 else valorImposto end as vl_total_iss
-	, 0 as vl_total_iss_outros
-	, case when valorImposto is null then 0 else valorImposto end as vl_tributo_municipal
-	, valorTotal - valorImposto as vl_total_liquido
+	, a.vl_inss as vl_inss
+	, a.vl_ir as vl_ir
+	, a.vl_pis as vl_pis
+	, a.vl_cofins as vl_cofins
+	, a.vl_csll as vl_csll
+	, a.vl_total_base_calculo
+	,  valorTotal - a.vl_inss - a.vl_ir - a.vl_pis - a.vl_csll - a.vl_total_iss   as vl_total_liquido
+	, a.vl_total_descontos_condicionados
+	, a.vl_total_descontos_incondicionados
+	, a.vl_total_deducoes
+	, a.vl_outras_retencoes
+	, a.vl_total_servicos
+	, a.vl_total_iss
+	, a.vl_total_iss_outros
+	, a.vl_tributo_municipal
 	, prestador_id as pessoa_origem_id
-	-- , numero as nro_nota
 	, numero as nro_nota
-	, concat(cast(dataPrestacao as char), ' 00:00:00') as data_hora_fato_gerador
-	, concat(cast(dataPrestacao as char), ' 00:00:00') as data_hora_emissao
+	, CAST(correlacao AS UNSIGNED)  as nro_rps
+	, td.emissao as data_hora_fato_gerador
+	, td.emissao as data_hora_emissao
 	, upper(CONCAT(SUBSTRING(td.senha, 1, 4), SUBSTRING(td.senha, 5, 4))) as nro_verificacao
-	-- , tn.id as nro_verificacao
 	, case
 		when td.dataCancelamento is not null then 'CANCELADA'
 		else 'NORMAL'
@@ -44,10 +43,8 @@ select
 	end as prestador_tipo_pessoa
 	, docPrestador as prestador_inscricao
 	, cast(nomePrestador as char(155)) as prestador_nome
-	-- , inscMun as prestador_inscricao_municipal
-	-- , inscEstPrestador as prestador_inscricao_estadual
-	, null as prestador_inscricao_municipal
-	, null as prestador_inscricao_estadual
+	, cast(REGEXP_REPLACE(tp.inscMun, '[^0-9]', '') as char(15)) as prestador_inscricao_municipal
+	, cast(REGEXP_REPLACE(tn.inscEstPrestador, '[^0-9]', '') as char(15)) as prestador_inscricao_estadual
 	, cast(REGEXP_REPLACE(cepPrestador, '[^0-9]', '') as char(8)) as prestador_cep
 	, cast(bairroPrestador as char(60)) as prestador_bairro
 	, enderecoPrestador as prestador_logradouro
@@ -63,10 +60,8 @@ select
 	, cast(nomeTomador as char(155)) as tomador_nome
 	, cast(bairroTomador as char(60)) as tomador_bairro
 	, nomeFantasiaTomador as tomador_nome_social_fantasia
-	-- , inscMunTomador as tomador_inscricao_municipal
-	-- , inscEstTomador as tomador_inscricao_estadual
-	, null as tomador_inscricao_municipal
-	, null as tomador_inscricao_estadual
+	, cast(REGEXP_REPLACE(tn.inscMunTomador, '[^0-9]', '') as char(15))  as tomador_inscricao_municipal
+	, cast(REGEXP_REPLACE(tn.inscEstTomador, '[^0-9]', '') as char(15)) as tomador_inscricao_estadual
 	,cast(REGEXP_REPLACE(cepTomador, '[^0-9]', '') as char(8)) as tomador_cep
 	, enderecoTomador as tomador_logradouro
 	, cast(numeroTomador as char(10)) as tomador_numero
@@ -95,3 +90,21 @@ left join t_pessoa tp on
 	tp.id = prestador_id
 left join t_regimeiss tr on
 	tr.id = tp.regimeISS_id
+left join lateral (
+	select
+	case when descontoCondicional is null then 0 else descontoCondicional end as vl_total_descontos_condicionados
+	, case when descontoIncondicional is null then 0 else descontoIncondicional end as vl_total_descontos_incondicionados
+	, case when outrasDeducoes is null then 0 else outrasDeducoes end as vl_total_deducoes
+	, case when outrasRetencoes is null then 0 else outrasRetencoes end as vl_outras_retencoes
+	, case when valorTotal is null then 0 else valorTotal end vl_total_servicos
+	, case when valorTotal is null then 0 else valorTotal end vl_total_base_calculo
+	, case when valorImposto is null then 0 else valorImposto end as vl_total_iss
+	, 0 as vl_total_iss_outros
+	, case when valorImposto is null then 0 else valorImposto end as vl_tributo_municipal
+	, case when retencaoINSS is null then 0 else retencaoINSS end as vl_inss
+	, case when retencaoIRRF is null then 0 else retencaoIRRF end as vl_ir
+	, case when retencaoPIS is null then 0 else retencaoPIS end as vl_pis
+	, case when retencaoCOFINS is null then 0 else retencaoCOFINS end as vl_cofins
+	, case when retencaoCSLL is null then 0 else retencaoCSLL end as vl_csll
+) a on
+	true

@@ -1,6 +1,5 @@
 select
 	tp.contadorResponsavel_id as id
--- 	 tp2.id
 	, tp2.documento as inscricao
 	, tpap2.crc as crc
 from

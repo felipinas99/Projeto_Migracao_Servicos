@@ -14,23 +14,6 @@ IF servico = 'pessoas' THEN
   from "Livro_Eletronico".pessoas p2
   where p2.id_gerado is not null and p.id_gerado is null and p2.cpf_cnpj = p.cpf_cnpj and length(p2.cpf_cnpj) > 5;
 
-  update "Livro_Eletronico".pessoas pe set enderecos = tab.enderecos  from (SELECT
-        pessoa_cloud_id,
-        json_agg(json_build_object(
-            'id', id,
-            'cep', cep,
-            'complemento', complemento,
-            'numero', numero,
-            'municipio_cloud_id', municipio_cloud_id,
-            'logradouro_cloud_id', logradouro_cloud_id,
-            'bairro_cloud_id', bairro_cloud_id,
-            'pessoa_cloud_id', pessoa_cloud_id,
-            'tipo_endereco', tipo_endereco
-        )) AS enderecos
-    FROM "Livro_Eletronico".pessoas_enderecos
-    GROUP BY pessoa_cloud_id) as tab where tab.pessoa_cloud_id = pe.id_gerado;
-end if;
-
 IF servico = 'municipios' THEN
   UPDATE "Livro_Eletronico".municipios o
   SET estado_cloud_id = p.id_gerado
@@ -105,6 +88,31 @@ IF servico = 'pessoas_enderecos' THEN
     AND o.id_gerado IS NULL
     AND p.municipio_cloud_id = o.municipio_cloud_id
     AND public.unaccent(trim(p.nome)) ILIKE public.unaccent(trim(o.bairro_descricao));
+
+UPDATE "Livro_Eletronico".pessoas pe
+SET enderecos = tab.enderecos
+FROM (
+    SELECT
+        pessoa_cloud_id,
+        json_agg(json_build_object(
+            'idGerado', json_build_object(
+                'iPessoas', pessoa_cloud_id,
+                'tipoEndereco', tipo_endereco
+            ),
+            'cep', cep,
+            'complemento', complemento,
+            'numero', numero,
+            'municipio_cloud_id', municipio_cloud_id,
+            'logradouro_cloud_id', logradouro_cloud_id,
+            'bairro_cloud_id', bairro_cloud_id,
+            'pessoa_cloud_id', pessoa_cloud_id,
+            'tipo_endereco', tipo_endereco
+        )) AS enderecos
+    FROM "Livro_Eletronico".pessoas_enderecos
+    GROUP BY pessoa_cloud_id
+) AS tab
+WHERE tab.pessoa_cloud_id = pe.id_gerado;
+
 END IF;
 
 
@@ -251,11 +259,6 @@ IF servico = 'declaracoes_df' THEN
   FROM "Livro_Eletronico".declaracoes p
   WHERE p.id = o.declaracao_origem_id AND o.declaracao_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
 
-  -- Atualiza documento_cloud_id
-  -- UPDATE "Livro_Eletronico".declaracoes_df o
-  -- SET documento_cloud_id = p.id_gerado
-  -- FROM "Livro_Eletronico".documentos p
-  -- WHERE p.id = o.documento_origem_id AND o.documento_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
 
   -- Atualiza projeto_cloud_id
   -- UPDATE "Livro_Eletronico".declaracoes_df o
@@ -269,10 +272,10 @@ IF servico = 'declaracoes_df' THEN
   FROM "Livro_Eletronico".series p
   WHERE p.id = o.serie_origem_id AND o.serie_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
 
-  -- UPDATE "Livro_Eletronico".declaracoes_df o
-  -- SET serie_cloud_id = p.id_gerado
-  -- FROM "Livro_Eletronico".series p
-  -- WHERE p.descricao = o.serie_descricao AND o.serie_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
+  UPDATE "Livro_Eletronico".declaracoes_df o
+  SET serie_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".series p
+  WHERE p.descricao = o.serie_descricao AND o.serie_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
 
 
   -- Atualiza arquivo_cloud_id
@@ -317,15 +320,9 @@ IF servico = 'declaracoes_df_itens' THEN
 
   -- Atualiza declaracao_cloud_id
   UPDATE "Livro_Eletronico".declaracoes_df_itens o
-  SET declaracao_cloud_id = cast(p.id_gerado->>'iDeclaracoes' as int )
-  FROM "Livro_Eletronico".declaracoes_df p
+  SET declaracao_cloud_id = p.id_gerado
+  FROM "Livro_Eletronico".declaracoes p
   WHERE p.id = o.declaracao_origem_id AND o.declaracao_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
-
-  
-  UPDATE "Livro_Eletronico".declaracoes_df_itens o
-  SET documento_cloud_id = cast(p.id_gerado->>'iDocumentos' as int )
-  FROM "Livro_Eletronico".declaracoes_df p
-  WHERE p.id = o.documento_origem_id AND o.documento_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
 
 
   -- Atualiza lista_servico_cloud_id
@@ -333,12 +330,6 @@ IF servico = 'declaracoes_df_itens' THEN
   SET lista_servico_cloud_id = cast(p.id_gerado->>'iListasServicos' as varchar )
   FROM "Livro_Eletronico".listas_servicos p
   WHERE p.id = o.lista_servico_origem_id AND o.lista_servico_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
-
-  -- Atualiza sequencia_cloud_id
-  -- UPDATE "Livro_Eletronico".declaracoes_df_itens o
-  -- SET sequencia_cloud_id = p.id_gerado
-  -- FROM "Livro_Eletronico".sequencias p
-  -- WHERE p.id = o.sequencia_origem_id AND o.sequencia_cloud_id IS NULL AND p.id_gerado IS NOT NULL;
 
   -- Atualiza cnae_cloud_id
   -- UPDATE "Livro_Eletronico".declaracoes_df_itens o

@@ -38,4 +38,5 @@ LEFT JOIN LATERAL (
 ) t ON true
 WHERE ((p.cpf_cnpj IS NOT NULL AND p.rn = 1) OR p.cpf_cnpj IS NULL)
   AND p.atualizado IS NULL
+  and p.id = 3159508
   AND p.id_gerado IS NULL

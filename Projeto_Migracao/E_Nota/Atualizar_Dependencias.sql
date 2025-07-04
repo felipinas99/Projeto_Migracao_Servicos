@@ -174,6 +174,26 @@ IF servico = 'notas_fiscais' THEN
   FROM "E_Nota".competencias c
   WHERE n.competencias_descricao BETWEEN c.data_inicial AND c.data_final AND n.competencias_cloud_id IS NULL AND competencias_descricao IS NOT NULL AND n.id_gerado IS NULL;
 
+  update "E_Nota".notas_fiscais nf set prestador_telefone = tab.telefone from (select
+    pessoa_origem_id
+    , cast(REGEXP_REPLACE(
+      REGEXP_REPLACE(
+        REGEXP_REPLACE(telefone, '\s+', '', 'g'), -- remove espaços em branco
+        '[^0-9]', '', 'g'                        -- remove tudo que não for número
+      ), 
+      '^0+', ''                                 -- remove zeros à esquerda
+    ) as varchar(11))as telefone
+    , row_number() over (PARTITION by pessoa_origem_id
+    order by pessoa_origem_id
+    , pt.id) as rn
+    from
+    "E_Nota".pessoas_telefones pt ) as tab where 
+    tab.pessoa_origem_id  = nf.pessoa_origem_id 
+    and rn = 1 
+    and nf.prestador_telefone  is null;
+	
+	
+
   -- UPDATE "E_Nota".notas_fiscais n
   -- SET series_rps_cloud_id = s.id_gerado
   -- FROM "E_Nota".series_rps s
@@ -219,12 +239,12 @@ IF servico = 'notas_fiscais_servicos' THEN
     AND nfs.nota_fiscal_cloud_id IS NULL
     AND nfs.id_gerado IS NULL;
 
-  UPDATE "E_Nota".notas_fiscais_servicos nfs
-  SET cnae_cloud_id = c.id_gerado
-  FROM "E_Nota".cnaes c
-  WHERE c.id = nfs.cnae_origem_id
-    AND nfs.cnae_cloud_id IS NULL
-    AND nfs.id_gerado IS NULL;
+  -- UPDATE "E_Nota".notas_fiscais_servicos nfs
+  -- SET cnae_cloud_id = c.id_gerado
+  -- FROM "E_Nota".cnaes c
+  -- WHERE c.id = nfs.cnae_origem_id
+  --   AND nfs.cnae_cloud_id IS NULL
+  --   AND nfs.id_gerado IS NULL;
 
   UPDATE "E_Nota".notas_fiscais_servicos nfs
   SET lista_servico_entidade_cloud_id = lse.id_gerado
@@ -233,12 +253,12 @@ IF servico = 'notas_fiscais_servicos' THEN
     AND nfs.lista_servico_entidade_cloud_id IS NULL
     AND nfs.id_gerado IS NULL;
 
-  UPDATE "E_Nota".notas_fiscais_servicos nfs
-  SET pais_cloud_id = p.id_gerado
-  FROM "E_Nota".paises p
-  WHERE p.id = nfs.pais_origem_id
-    AND nfs.pais_cloud_id IS NULL
-    AND nfs.id_gerado IS NULL;
+  -- UPDATE "E_Nota".notas_fiscais_servicos nfs
+  -- SET pais_cloud_id = p.id_gerado
+  -- FROM "E_Nota".paises p
+  -- WHERE p.id = nfs.pais_origem_id
+  --   AND nfs.pais_cloud_id IS NULL
+  --   AND nfs.id_gerado IS NULL;
 
   UPDATE "E_Nota".notas_fiscais_servicos nfs
   SET municipio_cloud_id = m.id_gerado
@@ -254,12 +274,12 @@ IF servico = 'notas_fiscais_servicos' THEN
     AND nfs.municipio_incidencia_cloud_id IS NULL
     AND nfs.id_gerado IS NULL;
 
-  UPDATE "E_Nota".notas_fiscais_servicos nfs
-  SET script_cloud_id = s.id_gerado
-  FROM "E_Nota".scripts s
-  WHERE s.id = nfs.script_origem_id
-    AND nfs.script_cloud_id IS NULL
-    AND nfs.id_gerado IS NULL;
+  -- UPDATE "E_Nota".notas_fiscais_servicos nfs
+  -- SET script_cloud_id = s.id_gerado
+  -- FROM "E_Nota".scripts s
+  -- WHERE s.id = nfs.script_origem_id
+  --   AND nfs.script_cloud_id IS NULL
+  --   AND nfs.id_gerado IS NULL;
 END IF;
 
 -- notas_fiscais_cancelamento

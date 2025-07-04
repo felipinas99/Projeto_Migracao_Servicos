@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS "Livro_Eletronico".municipios (
 );
 
 CREATE TABLE IF NOT EXISTS "Livro_Eletronico".bairros (
-    id INT PRIMARY KEY,
+    id uuid PRIMARY KEY,
     municipio_origem_id int,
     municipio_cloud_id int,
     nome VARCHAR,
@@ -376,6 +376,7 @@ CREATE TABLE IF NOT EXISTS "Livro_Eletronico".declaracoes_df (
     projeto_origem_id INT,
     projeto_cloud_id INT,
     serie_origem_id INT,
+    serie_descricao varchar,
     serie_cloud_id INT,
     arquivo_origem_id INT,
     arquivo_cloud_id INT,
@@ -431,17 +432,17 @@ CREATE TABLE IF NOT EXISTS "Livro_Eletronico".declaracoes_df (
     atualizado VARCHAR
 );
 
-
 CREATE TABLE IF NOT EXISTS "Livro_Eletronico".declaracoes_df_itens (
-    id INT PRIMARY KEY,
+    id uuid PRIMARY KEY,
+    entidade_cloud_id int,
     declaracao_origem_id INT,
     declaracao_cloud_id INT,
     documento_origem_id INT,
     documento_cloud_id INT,
     lista_servico_origem_id INT,
     lista_servico_cloud_id varchar,
-    sequencia_origem_id INT,
-    sequencia_cloud_id INT,
+    sequencia_origem_id VARCHAR,
+    sequencia_cloud_id VARCHAR,
     cnae_origem_id INT,
     cnae_cloud_id INT,
     municipio_origem_id INT,
@@ -461,7 +462,7 @@ CREATE TABLE IF NOT EXISTS "Livro_Eletronico".declaracoes_df_itens (
     aliquota VARCHAR,
     vl_iss VARCHAR,
     vl_taxas VARCHAR,
-    id_gerado INT,
+    id_gerado jsonb,
     mensagem TEXT,
     atualizado VARCHAR
 );

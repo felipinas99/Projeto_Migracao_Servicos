@@ -1,3 +1,6 @@
+import json
+
+
 def montar(lista, funcao):
     retorno = []
     for item in lista:
@@ -28,6 +31,13 @@ def montar(lista, funcao):
     }
 
         if funcao == 'Atualizar':
-            dado["bairro"]["idGerado"] = {"id": item.id_gerado}
+            dado["declaracoesDfItens"]["idGerado"] = {""
+                "iEntidades": item.entidade_cloud_id, 
+                "iDocumentos": item.documento_cloud_id, 
+                "iSequencias": item.sequencia_cloud_id, 
+                "iDeclaracoes": item.declaracao_cloud_id, 
+                "iListasServicos": item.lista_servico_cloud_id
+                }
+            
         retorno.append(dado)
     return retorno
