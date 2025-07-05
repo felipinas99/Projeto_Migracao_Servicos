@@ -235,3 +235,44 @@ class ProcessamentoController(Motor):
         funcao = kwargs.get("funcao")
         self.atualiza_dependencias_tabela_controle(servico,self.sistema)
         return envios(servico, funcao)
+
+    def salvar_retorno_sql_em_txt(self,retorno_sql, nome_arquivo="resultado_pre_validacao.txt"):
+        """
+        Salva o retorno do SQL em um arquivo .txt na pasta 'pre_validacao' duas pastas acima do arquivo atual.
+        """
+        # Caminho para duas pastas acima
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        pasta_pre_validacao = os.path.join(base_dir, "Pre_Validacao")
+        os.makedirs(pasta_pre_validacao, exist_ok=True)
+
+        caminho_arquivo = os.path.join(pasta_pre_validacao, nome_arquivo)
+
+        with open(caminho_arquivo, "w", encoding="utf-8") as f:
+            if isinstance(retorno_sql, (list, tuple)):
+                for linha in retorno_sql:
+                    f.write(str(linha) + "\n")
+            else:
+                f.write(str(retorno_sql))
+
+        print(f"Arquivo salvo em: {caminho_arquivo}")
+
+
+    def iniciar_pre_validacao(self, **kwargs):
+        servico = kwargs.get("servico")
+        try:
+            arquivo = os.path.join("Projeto_Migracao", self.sistema, "Pre_Validacao", f"{servico['nome']}.sql")
+            with open(arquivo, 'r', encoding='utf-8') as arquivo:
+                script = arquivo.read()
+                script_formatado = sqlparse.format(script, reindent=True, keyword_case='upper')
+            cursor_destino = criar_cursor('destino')
+            cursor_destino.execute(script_formatado)
+            self.salvar_retorno_sql_em_txt(cursor_destino.fetchall(), f"resultado_pre_validacao_{servico['nome']}.txt")
+            return True
+        
+        
+        
+        except Exception as e:
+            print(f"Erro ao executar a pré-validação: {e}")
+            return False
+        finally:
+            cursor_destino.close()

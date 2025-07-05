@@ -76,19 +76,19 @@ def envios(servico, funcao):
         return False
     return True
 
-def get_lotes_paralelo():
-    def processa_lote(lote):
-        try:
-            cursor_atualiza = criar_cursor('destino')  # Cada thread cria seu próprio cursor!
-            retorno, situacao = get_lote(url, lote.lote_id, token)
-            if situacao in ('PROCESSADO','AGUARDANDO_EXECUCAO','EXECUTANDO','PROCESSANDO'):
-                sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_recebido = ? where id = ?'''
-                params = (situacao, json.dumps(retorno), lote.id)
-                cursor_atualiza.execute(sql, params)
-                cursor_atualiza.execute("commit")
-            cursor_atualiza.close()
-        except Exception as e:
-            print(f"Erro no processamento do lote {getattr(lote, 'id', None)}: {e}")
+# def get_lotes_paralelo():
+#     def processa_lote(lote):
+#         try:
+#             cursor_atualiza = criar_cursor('destino')  # Cada thread cria seu próprio cursor!
+#             retorno, situacao = get_lote(url, lote.lote_id, token)
+#             if situacao in ('PROCESSADO','AGUARDANDO_EXECUCAO','EXECUTANDO','PROCESSANDO'):
+#                 sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_recebido = ? where id = ?'''
+#                 params = (situacao, json.dumps(retorno), lote.id)
+#                 cursor_atualiza.execute(sql, params)
+#                 cursor_atualiza.execute("commit")
+#             cursor_atualiza.close()
+#         except Exception as e:
+#             print(f"Erro no processamento do lote {getattr(lote, 'id', None)}: {e}")
 
 
     try:

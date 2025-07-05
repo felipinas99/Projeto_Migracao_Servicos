@@ -74,6 +74,7 @@ def main():
         frame_botoes.pack(anchor="w", fill="x")
         botao = Botoes()
         botao.criar_botao_servico(frame_botoes, 'Extrair', servico, caminho, processamento_controller.iniciar_extracao)
+        botao.criar_botao_servico(frame_botoes, 'Pre Validacao', servico, caminho, processamento_controller.iniciar_pre_validacao)
         botao.criar_botao_servico(frame_botoes, 'Resgate', servico, caminho, processamento_controller.iniciar_resgate)
         botao.criar_botao_servico(frame_botoes, 'Enviar', servico, caminho, processamento_controller.iniciar_envios)
         botao.criar_botao_servico(frame_botoes, 'Atualizar', servico, caminho, processamento_controller.iniciar_atualizacao)
