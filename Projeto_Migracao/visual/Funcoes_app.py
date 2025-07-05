@@ -7,10 +7,12 @@ from ttkbootstrap import Combobox
 import os, json
 import threading
 
+from Projeto_Migracao.utilitario import processamento_controller
 from Projeto_Migracao.utilitario.Funcoes import criar_cursor
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-config_file = os.path.join(current_dir, "config_banco.json")
+parent_dir = os.path.dirname(current_dir)
+config_file = os.path.join(parent_dir, "config_banco.json")
 
 def criar_rotulo(janela, texto, tamanho=14):
     rotulo = ttk.Label(janela, text=texto, font=("Helvetica", tamanho))
@@ -121,7 +123,7 @@ def abrir_configurar_banco():
     botao_salvar = ttk.Button(configurar_banco_janela, text="Salvar", command=lambda: salvar_configuracao(campos,entradas_origem, entradas_destino))
     botao_salvar.pack(pady=10)
     
-def abrir_parametros():
+def abrir_parametros(processamento_controller):
     configurar_banco_janela = ttk.Toplevel()
     configurar_banco_janela.title("Configurar Parametros")
     configurar_banco_janela.geometry("900x700+0+0")
@@ -187,6 +189,8 @@ def abrir_parametros():
                 print(f"Parâmetro '{campo}' salvo com sucesso!")
             except Exception as e:
                 print(f"Erro ao salvar o parâmetro '{campo}': {e}")
+        
+        processamento_controller.recarregar_informações()
 
     botao_salvar = ttk.Button(configurar_banco_janela, text="Salvar", command=salvar_parametros)
     botao_salvar.pack(pady=10)
@@ -210,41 +214,12 @@ def abrir_deletar_registros():
             entradas.append(entrada)
 
 
-
-def criar_botao_servico(frame, funcao, servico, caminho, acao):
-    botao = ttk.Button(
-        frame,
-        text=funcao,
-        command=lambda: acao_com_cor(botao, servico=servico, funcao=funcao, caminho=caminho, acao=acao)
-    )
-    botao.pack(side="left", padx=5, pady=2)
-
-
-def acao_com_cor(botao, **kwargs):
-    servico = kwargs.get("servico")
-    funcao = kwargs.get("funcao")
-    acao = kwargs.get("acao")
-
-    botao.config(state="disabled", text=f"Processando {funcao}...")
-
-    def run_acao():
-        retorno = acao(servico=servico, funcao=funcao)
-        # Atualize o botão na thread principal
-        botao.after(0, lambda: atualizar_botao(botao, funcao, retorno))
-
-    def atualizar_botao(botao, funcao, retorno):
-        if retorno == True:
-            botao.config(state="normal", text="Sucesso " + funcao, bootstyle="success")
-        else:
-            botao.config(state="normal", text="Falha " + funcao, bootstyle="danger")
-        botao.after(3000, lambda: botao.config(text=funcao, bootstyle="primary"))
-
-    threading.Thread(target=run_acao).start()
-
-
-def atualizar_tabela_periodicamente(tree, intervalo=2):
+def atualizar_tabela_periodicamente(tree, motor_construido, intervalo=2):
     def worker():
         while True:
+            if motor_construido is False:
+                time.sleep(intervalo)
+                continue
             # Consulta ao banco em thread separada
             try:
                 cursor = criar_cursor('destino')

@@ -13,7 +13,7 @@ IF servico = 'pessoas' THEN
   set id_gerado = p2.id_gerado
   from "Livro_Eletronico".pessoas p2
   where p2.id_gerado is not null and p.id_gerado is null and p2.cpf_cnpj = p.cpf_cnpj and length(p2.cpf_cnpj) > 5;
-
+END IF;
 IF servico = 'municipios' THEN
   UPDATE "Livro_Eletronico".municipios o
   SET estado_cloud_id = p.id_gerado

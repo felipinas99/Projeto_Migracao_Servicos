@@ -76,98 +76,6 @@ def envios(servico, funcao):
         return False
     return True
 
-def postar(url,lote,token,servico, metodo):
-    headers = {
-        "Authorization": "",
-        "Content-Type": "application/json"
-        }           
-            
-    headers['Authorization']=f'Bearer {token}'
-
-    try:
-        if metodo == 'PUT':
-            response = requests.put(url+servico, data=lote, headers=headers)
-        else:
-            response = requests.post(url+servico, data=lote, headers=headers)
-        retorno = response.json()
-        id_lote = retorno.get('id') or retorno.get('idLote')
-        if id_lote != None:
-            return retorno, 'ENVIADO'
-        return retorno, 'ERRO'
-    except Exception as e:
-        return 'erro'
-
-def postagem():
-    try:
-        while True:
-            cursor = criar_cursor('destino')
-            cursor_atualiza = criar_cursor('destino')
-            token  = busca_parametro('Token')
-            url = busca_parametro('Url_Base')
-            sistema = busca_parametro('Sistema')
-            cursor.execute('select * from motor.lotes_pendentes_envio where sistema = ? order by 1 asc', sistema)
-            while True:
-                lista = cursor.fetchmany(50)
-                if not lista:
-                    time.sleep(5)
-                    break
-                for lote in lista:
-                    retorno, situacao = postar(url, lote.lote_envio, token, lote.servico, lote.metodo)
-                    id_lote = retorno.get('id') or retorno.get('idLote')
-                    sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_id = ?, lote_envio_retorno = ?  where id = ?'''
-                    params = (situacao, id_lote, json.dumps(retorno), lote.id)
-                    cursor_atualiza.execute(sql, params)
-                    cursor_atualiza.execute("commit")
-            
-            cursor.close()
-            cursor_atualiza.close()
-    except Exception as e:
-        cursor.close()
-        cursor_atualiza.close()
-        print(f"Erro postagem: {e}")
-        time.sleep(5)
-        postagem()
-
-def get_lote(url, lote_id, token):
-    headers = {
-        "Authorization": "",
-        "Content-Type": "application/json"
-        }
-
-    headers['Authorization']=f'Bearer {token}'
-
-    try:
-        response = requests.get(
-            url=f'{url}{lote_id}',
-            headers=headers
-        )
-        resultado = response.json()
-
-        situacao = resultado.get('situacao') or resultado.get('statusLote')
-        match situacao:
-            case 'EXECUTANDO' | 'EM PROCESSAMENTO':
-                return resultado, 'PROCESSANDO' 
-            case 'ERRO' | 'ERROR':
-                return resultado, 'ERRO'
-            case 'EXECUTADO' | 'PROCESSADO' | 'EXECUTADO_OK'| 'EXECUTADO_PARCIALMENTE_OK':
-                return resultado, 'PROCESSADO'
-            case 'AGUARDANDO_EXECUCAO':
-                return resultado, 'AGUARDANDO_EXECUCAO'
-            case _:
-                print(f"Situação desconhecida ou ausente: {situacao}")
-                return resultado, 'DESCONHECIDO'
-
-    except requests.exceptions.RequestException as e:
-        print(f"Erro na requisição: {e}")
-        return {}, 'ERRO'
-    except ValueError as e:
-        print(f"Erro ao decodificar JSON: {e}")
-        print(f"Resposta bruta (para análise): {response.text}")
-        return {}, 'ERRO'
-    except Exception as e:
-        print(f"Erro inesperado: {e}")
-        return {}, 'ERRO'
-
 def get_lotes_paralelo():
     def processa_lote(lote):
         try:
@@ -202,93 +110,7 @@ def get_lotes_paralelo():
         print(f"Erro ao get_lotes: {e}")
         time.sleep(5)
         get_lotes_paralelo()
-
-def get_lotes():
-    try:
-        while True:
-            cursor = criar_cursor('destino')
-            cursor_atualiza = criar_cursor('destino')
-            token  = busca_parametro('Token')
-            sistema  = busca_parametro('Sistema')
-            url = busca_parametro('Url_Lote')
-            cursor.execute(f'''select * from motor.lotes_pendentes_processamento lpp where sistema = '{sistema}' ''')
-            while True:
-                lista = cursor.fetchmany(50)
-                if not lista:
-                    time.sleep(5)
-                    break
-                for lote in lista:
-                    retorno, situacao = get_lote(url,lote.lote_id, token) 
-                    if situacao in ('PROCESSADO','AGUARDANDO_EXECUCAO','EXECUTANDO','PROCESSANDO'):
-                        sql = '''UPDATE motor.controle_lotes set status_envio = ?, lote_recebido = ? where id = ?'''
-                        params = (situacao, json.dumps(retorno), lote.id)
-                        cursor_atualiza.execute(sql, params)
-                        cursor_atualiza.execute("commit")
-                        continue
-            cursor.close()
-            cursor_atualiza.close()
-    
-    except Exception as e:
-        cursor.close()
-        cursor_atualiza.close()
-        print(f"Erro ao get_lotes: {e}")
-        time.sleep(5)
-        get_lotes()
-    
-def atualiza_retorno_lote_itens():
-    try:
-        while True:
-            cursor = criar_cursor('destino')
-            cursor_atualiza = criar_cursor('destino')
-            sistema = busca_parametro('Sistema')
-            cursor.execute(f'''select * from motor.lotes_pendentes_resgate lpp where sistema = '{sistema}' ''')
-            while True:
-                lista = cursor.fetchmany(50)
-                if not lista:
-                    time.sleep(5)
-                    break
-                for lote in lista:
-                    retorno = json.loads(lote.lote_recebido)['retorno']
-                    if not retorno:
-                        continue
-
-                    for item in retorno:
-                        mensagem =  str(item.get("situacao")) + ' / '  + str(item.get("mensagem"))
-                        id_gerado = item.get('idGerado', {}).get('id') or item.get('idGerado', {}).get('ids') or item.get("idGerado") 
-                        if isinstance(id_gerado, dict):
-                            id_gerado = id_gerado.get('i'+str(lote.tipo_registro).capitalize())
-                            # id_gerado = json.dumps(id_gerado, default=str)
-                            if id_gerado == None:
-                                id_gerado = json.dumps(item.get("idGerado"))
-
-
-
-                        if id_gerado == None:
-                            sql = f'''UPDATE "{lote.sistema}".{lote.tipo_registro} set mensagem = ? where id = ?'''
-                            params = (mensagem, item['idIntegracao'])
-                            if item.get("status") == 'SUCESSO':
-                                sql = f'''UPDATE "{lote.sistema}".{lote.tipo_registro} set mensagem = ? , atualizado = 'true'  where id = ?'''
-                                params = (mensagem, item['idIntegracao'])
-                        else:
-                            sql = f'''UPDATE "{lote.sistema}".{lote.tipo_registro} set id_gerado = ? , mensagem = ?, atualizado = 'true' where id = ?'''
-                            params = (str(id_gerado), mensagem ,item['idIntegracao'])
-                            
-                        cursor_atualiza.execute(sql, params) 
-                        cursor_atualiza.execute("commit")
-
-                    sql = f'''UPDATE motor.controle_lotes set ids_atualizados = true where id = ?'''
-                    params = (lote.id)
-                    cursor_atualiza.execute(sql, params)
-                    cursor_atualiza.execute("commit")
-            cursor.close()
-            cursor_atualiza.close()
-    except Exception as e:
-        cursor.close()
-        cursor_atualiza.close()
-        print(f"Erro ao atualiza_retorno_lote_itens: {e}")
-        time.sleep(5)
-        atualiza_retorno_lote_itens()
-
+ 
 def criar_cursor(opcao):
 
 
@@ -455,26 +277,6 @@ def busca_todos_registros_cloud(servico):
         print(f"Erro na busca_todos_registros_cloud: {e}")
         return
 
-def atualiza_dependencias_tabela_controle(servico,sistema):
-    try:
-        cursor_destino = criar_cursor('destino')
-
-        arquivo_atualizar_dependencias = os.path.join("Projeto_Migracao",sistema,"Atualizar_Dependencias.sql")
-        with open(arquivo_atualizar_dependencias, 'r', encoding='utf-8') as arquivo_atualizar_dependencias:
-            script = arquivo_atualizar_dependencias.read()
-            script_formatado2 = sqlparse.format(script, reindent=True, keyword_case='upper')
-        cursor_destino = criar_cursor('destino')
-        cursor_destino.execute(script_formatado2)
-        cursor_destino.execute("commit;")
-        cursor_destino.execute(f'''select "{sistema}".atualizar_dependencias('{servico['tabela']}', '{sistema}')''')
-        cursor_destino.execute("commit;")
-
-    except Exception as e:
-        print(f"Erro ao executar a atualizacao de dependencias de tabelas: {e}")
-        return False
-    finally:
-        cursor_destino.close()
-
 def resgate(servico):
     try:
         cursor_resgate = criar_cursor('destino')
@@ -493,50 +295,6 @@ def resgate(servico):
 def listrar_arquivos(caminho, extensao):
     arquivos = [arquivo for arquivo in os.listdir(caminho) if arquivo.endswith('.'+extensao)]
     return arquivos
-
-def iniciar_extracao(**kwargs):
-    servico = kwargs.get("servico")
-    try:
-        sistema = busca_parametro('Sistema')
-        concorrente = busca_parametro('Concorrente')
-        arquivo = os.path.join("Projeto_Migracao",sistema,"Concorrente_Extracao",concorrente,f"{servico['nome']}.sql")
-        with open(arquivo, 'r', encoding='utf-8') as arquivo:
-            script = arquivo.read()
-            script_formatado = sqlparse.format(script, reindent=True, keyword_case='upper')
-        cursor_origem = criar_cursor('origem')
-        execute_sql_extracao(cursor_origem, script_formatado, servico["tabela"])
-        atualiza_dependencias_tabela_controle(servico, sistema)
-        
-    except Exception as e:
-        print(f"Erro ao executar a extração: {e}")
-        return False
-    finally:
-        cursor_origem.close()
-
-    return True
-
-def iniciar_envios(**kwargs):
-
-    sistema = busca_parametro('Sistema')
-    servico = kwargs.get("servico")
-    funcao = kwargs.get("funcao")
-    atualiza_dependencias_tabela_controle(servico,sistema)
-
-
-    return envios(servico, funcao)
-
-def iniciar_resgate(**kwargs):
-    servico = kwargs.get("servico")
-    sistema = busca_parametro('Sistema')
-    atualiza_dependencias_tabela_controle(servico,sistema)
-    return resgate(servico)
-
-def iniciar_atualizacao(**kwargs):
-    servico = kwargs.get("servico")
-    funcao = kwargs.get("funcao")
-    sistema = busca_parametro('Sistema')
-    atualiza_dependencias_tabela_controle(servico,sistema)
-    return envios(servico, funcao)
 
 def iniciar_delete(**kwargs):
     servico = kwargs.get("servico")
